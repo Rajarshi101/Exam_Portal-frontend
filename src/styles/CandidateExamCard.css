@@ -1,0 +1,41 @@
+.exam-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.exam-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.exam-card h3 {
+  margin-bottom: 0.8rem;
+}
+
+.exam-card p {
+  margin: 0.3rem 0;
+  color: #555;
+}
+
+.badge {
+  display: inline-block;
+  padding: 5px 10px;
+  margin-top: 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.badge.pending {
+  background-color: #ff9800;
+  color: white;
+}
+
+.badge.completed {
+  background-color: #4caf50;
+  color: white;
+}

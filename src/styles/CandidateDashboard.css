@@ -1,0 +1,17 @@
+.candidate-dashboard {
+  display: flex;
+  height: 100vh;
+  background-color: #f5f7fa;
+}
+
+.candidate-content {
+  flex: 1;
+  padding: 2rem;
+}
+
+.exam-list {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}

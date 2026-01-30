@@ -1,0 +1,50 @@
+.system-check {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  padding: 2rem;
+}
+
+.system-check h1 {
+  margin-bottom: 1.5rem;
+}
+
+.check-item {
+  margin-bottom: 1.5rem;
+}
+
+.check-item button {
+  padding: 12px 20px;
+  background-color: #243b55;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.check-item button:hover {
+  background-color: #141e30;
+}
+
+.check-item label {
+  font-size: 1rem;
+}
+
+.proceed-btn {
+  margin-top: 2rem;
+  padding: 14px 22px;
+  background-color: #243b55;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.proceed-btn:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  margin-bottom: 1rem;
+}
