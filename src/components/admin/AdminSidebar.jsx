@@ -10,7 +10,11 @@ function AdminSidebar({ setActiveTab }) {
       </button>
 
       <button onClick={() => setActiveTab("exams")}>
-        Exams
+        Create Exam
+      </button>
+
+      <button onClick={() => setActiveTab("allExams")}>
+        All Exams
       </button>
 
       <button onClick={() => setActiveTab("inviteAdmin")}>

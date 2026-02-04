@@ -3,36 +3,23 @@ import { inviteUser } from "../../api/adminUserApi";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import CreateExamWizard from "../../components/admin/CreateExamWizard";
 import InviteAdmin from "../../components/admin/InviteAdmin";
+import AdminMonitoringDashboard from "../../components/admin/AdminMonitoringDashboard";
 import "../../styles/AdminDashboard.css";
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteName, setInviteName] = useState("");
-  const [inviteMessage, setInviteMessage] = useState("");
+  const [selectedExamId, setSelectedExamId] = useState(null);
 
-  const handleInviteSubmit = async (e) => {
-    e.preventDefault();
-  
-    try {
-      await inviteUser({
-        email: inviteEmail,
-        name: inviteName,
-        role: "ADMIN",
-        inviteExpiryHours: 1,
-      });
-  
-      setInviteMessage("Invitation sent successfully");
-      setInviteEmail("");
-      setInviteName("");
-      setInviteRole("STUDENT");
-    } catch (error) {
-      console.error(error);
-      setInviteMessage("Failed to send invitation");
-    }
+  const handleMonitorExam = (examId) => {
+    setSelectedExamId(examId);
+    setActiveTab("monitorExam");
   };
-  
 
+  // Fixed: Go back to all exams, not create exam
+  const handleBackFromMonitoring = () => {
+    setSelectedExamId(null);
+    setActiveTab("allExams");
+  };
 
   return (
     <div className="admin-dashboard">
@@ -51,6 +38,21 @@ function AdminDashboard() {
             <h1>Create New Exam</h1>
             <CreateExamWizard />
           </>
+        )}
+
+        {activeTab === "allExams" && (
+          <AdminMonitoringDashboard 
+            onMonitorExam={handleMonitorExam}
+            onBack={() => setActiveTab("exams")} // Go back to create exam
+          />
+        )}
+
+        {activeTab === "monitorExam" && selectedExamId && (
+          <AdminMonitoringDashboard 
+            examId={selectedExamId}
+            onMonitorExam={handleMonitorExam}
+            onBack={handleBackFromMonitoring} // Go back to all exams
+          />
         )}
 
         {activeTab === "inviteAdmin" && (

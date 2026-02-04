@@ -179,3 +179,44 @@
 .delete-btn:hover {
   color: #c62828;
 }
+
+.candidate-count {
+  margin: 10px 0;
+  padding: 8px;
+  background-color: #f0f8ff;
+  border-radius: 4px;
+}
+
+.candidate-preview {
+  margin-top: 15px;
+  overflow-x: auto;
+}
+
+.candidate-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.candidate-preview th, .candidate-preview td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.candidate-preview th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.more-candidates {
+  text-align: center;
+  font-style: italic;
+  color: #666;
+  margin-top: 10px;
+}
+
+.finish-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
