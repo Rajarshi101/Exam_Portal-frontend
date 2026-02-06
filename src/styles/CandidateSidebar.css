@@ -4,6 +4,8 @@
   color: white;
   padding: 1.5rem;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .candidate-sidebar h2 {
@@ -36,6 +38,7 @@
   cursor: pointer;
   transition: all 0.25s ease;
   box-shadow: 0 4px 10px rgba(255, 77, 79, 0.3);
+  margin-top: auto;
 }
 
 .candidate-sidebar .logout-btn:hover {
