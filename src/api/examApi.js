@@ -67,6 +67,9 @@ export const getExams = () =>
 export const getExamSubmissions = (examId) =>
   api.get(`/admin/exams/${examId}/submissions`);
 
+export const updateExamStatus = (examId, statusData) =>
+  api.put(`/admin/exams/${examId}/status`, statusData);
+
 // Note: The snapshot URL doesn't need an API function since it's a direct image URL
 // But we can add a helper if needed
 export const getSnapshotImage = (snapshotId) => {
