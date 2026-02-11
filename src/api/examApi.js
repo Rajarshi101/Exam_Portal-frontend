@@ -61,9 +61,17 @@ export const verifyExamInvite = async (token) => {
 
 // Add these functions to your examApi.js
 
-export const getExams = () => 
-  api.get("/admin/exams");
-
+// In your examApi.js
+export const getExams = (params = {}) => {
+  return api.get("/admin/exams", {
+    params: {
+      page: params.page || 0,
+      size: params.size || 10,
+      ...(params.title && { title: params.title }),
+      ...(params.status && { status: params.status }),
+    }
+  });
+};
 export const getExamSubmissions = (examId) =>
   api.get(`/admin/exams/${examId}/submissions`);
 

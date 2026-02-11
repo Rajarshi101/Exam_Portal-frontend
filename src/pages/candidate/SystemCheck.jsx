@@ -21,30 +21,30 @@ function SystemCheck() {
   const requestCamera = async () => {
     try {
       setError("");
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
           width: { ideal: 1280 },
           height: { ideal: 720 },
-          facingMode: "user" 
-        } 
+          facingMode: "user",
+        },
       });
-      
+
       streamRef.current = stream;
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        
+
         // Wait for video to be ready
         videoRef.current.onloadedmetadata = () => {
           setCameraReady(true);
         };
-        
+
         videoRef.current.onerror = () => {
           setError("Camera failed to load.");
           setCameraReady(false);
         };
       }
-      
+
       setCameraGranted(true);
     } catch (err) {
       console.error("Camera error:", err);
@@ -57,20 +57,20 @@ function SystemCheck() {
   // Request screen share permission
   const requestScreenShare = async () => {
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ 
+      const stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
-        audio: false 
+        audio: false,
       });
-      
+
       // Handle when user stops sharing screen
       stream.getVideoTracks()[0].onended = () => {
         setScreenGranted(false);
       };
-      
+
       setScreenGranted(true);
       setError("");
     } catch (err) {
-      if (err.name !== 'NotAllowedError') {
+      if (err.name !== "NotAllowedError") {
         setError("Screen share permission denied.");
       }
     }
@@ -83,30 +83,30 @@ function SystemCheck() {
         hasVideoRef: !!videoRef.current,
         hasCanvasRef: !!canvasRef.current,
         cameraReady,
-        videoReady: videoRef.current?.readyState === 4
+        videoReady: videoRef.current?.readyState === 4,
       });
       return null;
     }
-    
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    
+
     // Ensure video is playing and has dimensions
     if (video.videoWidth === 0 || video.videoHeight === 0) {
       console.error("Video has zero dimensions");
       return null;
     }
-    
+
     // Set canvas dimensions to match video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
-    const context = canvas.getContext('2d');
-    
+
+    const context = canvas.getContext("2d");
+
     try {
       // Draw video frame to canvas
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
+
       // Convert canvas to Blob (JPEG format)
       return new Promise((resolve, reject) => {
         canvas.toBlob(
@@ -118,8 +118,8 @@ function SystemCheck() {
               reject(new Error("Failed to create blob from canvas"));
             }
           },
-          'image/jpeg',
-          0.8
+          "image/jpeg",
+          0.8,
         );
       });
     } catch (err) {
@@ -128,7 +128,8 @@ function SystemCheck() {
     }
   };
 
-  const canProceed = cameraGranted && screenGranted && consentGiven && cameraReady;
+  const canProceed =
+    cameraGranted && screenGranted && consentGiven && cameraReady;
 
   const handleProceed = async () => {
     if (!canProceed) {
@@ -156,14 +157,16 @@ function SystemCheck() {
       /* ==============================
         2️⃣ SMALL DELAY (IMPORTANT)
         ============================== */
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       /* ==============================
         3️⃣ CAMERA SNAPSHOT
         ============================== */
       const photoBlob = await capturePhoto();
       if (!photoBlob || photoBlob.size === 0) {
-        throw new Error("Failed to capture photo. Please ensure camera is working.");
+        throw new Error(
+          "Failed to capture photo. Please ensure camera is working.",
+        );
       }
 
       const photoFile = new File([photoBlob], `exam-start-${id}.jpg`, {
@@ -190,15 +193,18 @@ function SystemCheck() {
         state: {
           questions,
           duration: response.data.duration || 60,
-          submissionId
-        }
+          submissionId,
+        },
       });
-
     } catch (err) {
       console.error("Error starting exam:", err);
 
-      setError(
-        err.message ||
+      const backendMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Unable to start exam.Exam has not started yet . Please try again.";
+       
+      setError(backendMessage || err.message ||
         "Fullscreen permission is required to start the exam."
       );
 
@@ -211,13 +217,12 @@ function SystemCheck() {
     }
   };
 
-
   // Cleanup video stream on unmount
   useEffect(() => {
     return () => {
       if (streamRef.current) {
         const tracks = streamRef.current.getTracks();
-        tracks.forEach(track => track.stop());
+        tracks.forEach((track) => track.stop());
       }
     };
   }, []);
@@ -233,7 +238,7 @@ function SystemCheck() {
         <div className="error-message">
           <strong>Error:</strong> {error}
           {error.includes("photo") && (
-            <button onClick={requestCamera} style={{ marginLeft: '10px' }}>
+            <button onClick={requestCamera} style={{ marginLeft: "10px" }}>
               Retry Camera
             </button>
           )}
@@ -243,28 +248,30 @@ function SystemCheck() {
       <div className="check-section">
         <h3>1. Camera Permission {cameraReady && "✅"}</h3>
         <div className="check-item">
-          <button 
+          <button
             onClick={requestCamera}
             className={cameraGranted ? "granted" : ""}
           >
             {cameraGranted ? "✅ Camera Granted" : "Grant Camera Permission"}
           </button>
-          
+
           {cameraGranted && (
             <div className="camera-preview">
-              <video 
+              <video
                 ref={videoRef}
-                autoPlay 
-                playsInline 
+                autoPlay
+                playsInline
                 muted
                 className="camera-feed"
                 style={{
-                  border: cameraReady ? '3px solid #4CAF50' : '3px solid #ff9800'
+                  border: cameraReady
+                    ? "3px solid #4CAF50"
+                    : "3px solid #ff9800",
                 }}
               />
               <p className="preview-note">
-                {cameraReady 
-                  ? "✅ Camera ready - Photo will be captured when starting exam" 
+                {cameraReady
+                  ? "✅ Camera ready - Photo will be captured when starting exam"
                   : "⏳ Camera loading... Please wait"}
               </p>
             </div>
@@ -275,11 +282,13 @@ function SystemCheck() {
       <div className="check-section">
         <h3>2. Screen Share Permission</h3>
         <div className="check-item">
-          <button 
+          <button
             onClick={requestScreenShare}
             className={screenGranted ? "granted" : ""}
           >
-            {screenGranted ? "✅ Screen Share Granted" : "Grant Screen Share Permission"}
+            {screenGranted
+              ? "✅ Screen Share Granted"
+              : "Grant Screen Share Permission"}
           </button>
           <p className="helper-text">
             You'll be asked to share your entire screen or a specific window.
@@ -299,7 +308,7 @@ function SystemCheck() {
             <li>❌ More than 2 violations will auto-submit your exam</li>
           </ul>
         </div>
-        
+
         <div className="check-item">
           <label className="consent-checkbox">
             <input
@@ -308,8 +317,8 @@ function SystemCheck() {
               onChange={(e) => setConsentGiven(e.target.checked)}
             />
             <span>
-              I have read and agree to all the exam rules listed above. I understand that 
-              violations may result in exam termination.
+              I have read and agree to all the exam rules listed above. I
+              understand that violations may result in exam termination.
             </span>
           </label>
         </div>
@@ -332,7 +341,7 @@ function SystemCheck() {
             </span>
           </p>
         </div>
-        
+
         <button
           className="proceed-btn"
           disabled={!canProceed || loading}
@@ -340,13 +349,13 @@ function SystemCheck() {
         >
           {loading ? "Starting Exam..." : "Start Exam"}
         </button>
-        
+
         {canProceed && (
           <p className="proceed-note">
             Clicking "Start Exam" will capture a photo and begin your exam.
           </p>
         )}
-        
+
         {!canProceed && (
           <p className="proceed-note">
             Complete all checks above to enable the Start Exam button.
@@ -355,7 +364,7 @@ function SystemCheck() {
       </div>
 
       {/* Hidden canvas for capturing photos */}
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
+      <canvas ref={canvasRef} style={{ display: "none" }} />
     </div>
   );
 }
