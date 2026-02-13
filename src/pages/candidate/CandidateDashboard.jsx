@@ -23,6 +23,8 @@ function CandidateDashboard() {
       // Ensure we have an array
       const examsData = Array.isArray(response.data) ? response.data : [];
       setExams(examsData);
+
+      console.log("Student Exams Response:", examsData);
       
     } catch (err) {
       console.error("Error fetching student exams:", err);
@@ -35,6 +37,12 @@ function CandidateDashboard() {
   // Updated: Filter exams based on your API status values
   const upcomingExams = exams.filter(exam => {
     const status = exam.status?.toUpperCase();
+    const inviteRemaining = exam.inviteRemaining;
+
+    // If expired → NOT upcoming
+    if (inviteRemaining === "EXPIRED") {
+      return false;
+    }
     // "INVITED" means the student has been invited but hasn't started
     // "PENDING" means started but not completed
     return status === "INVITED" || status === "PENDING" || status === "ONGOING";
@@ -42,7 +50,8 @@ function CandidateDashboard() {
 
   const completedExams = exams.filter(exam => {
     const status = exam.status?.toUpperCase();
-    return status === "COMPLETED" || status === "SUBMITTED";
+    const inviteRemaining = exam.inviteRemaining;
+    return status === "COMPLETED" || status === "SUBMITTED" || inviteRemaining === "EXPIRED";
   });
 
   const formatInviteRemaining = (inviteRemaining) => {
@@ -96,7 +105,7 @@ function CandidateDashboard() {
           <h1>
             {activeTab === "upcoming"
               ? "Upcoming Exams"
-              : "Completed Exams"}
+              : "Past Exams"}
           </h1>
           <button 
             className="btn-refresh"

@@ -20,7 +20,7 @@ function CandidateSidebar({ setActiveTab }) {
       </button>
 
       <button onClick={() => setActiveTab("completed")}>
-        Completed Exams
+        Past Exams
       </button>
 
       <button onClick={handleLogout} className="logout-btn">

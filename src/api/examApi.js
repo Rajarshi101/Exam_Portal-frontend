@@ -75,6 +75,10 @@ export const getExams = (params = {}) => {
 export const getExamSubmissions = (examId) =>
   api.get(`/admin/exams/${examId}/submissions`);
 
+
+export const getExamQuestions = (examId) => 
+  api.get(`/admin/exams/${examId}/questions`);
+
 export const updateExamStatus = (examId, statusData) =>
   api.put(`/admin/exams/${examId}/status`, statusData);
 

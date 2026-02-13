@@ -64,7 +64,7 @@ function ExamSubmitted() {
               className="btn-review"
               onClick={() => navigate("/candidate-dashboard")}
             >
-              View Completed Exams
+              View Past Exams
             </button>
           )}
         </div>
