@@ -72,3 +72,29 @@ export const saveProgress = async (submissionId, answers) => {
     throw error;
   }
 };
+
+
+
+export const submitSnapshot = async (submissionId, imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    
+    const response = await api.post(
+      `/api/exams/session/${submissionId}/snapshots`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error submitting snapshot:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

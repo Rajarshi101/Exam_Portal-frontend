@@ -260,6 +260,8 @@ function SystemCheck() {
                 autoPlay
                 playsInline
                 muted
+                disablePictureInPicture
+                controlsList="nodownload nofullscreen noremoteplayback"
                 className="camera-feed"
                 style={{
                   border: cameraReady
@@ -267,6 +269,7 @@ function SystemCheck() {
                     : "3px solid #ff9800",
                 }}
               />
+
               <p className="preview-note">
                 {cameraReady
                   ? "✅ Camera ready - Photo will be captured when starting exam"

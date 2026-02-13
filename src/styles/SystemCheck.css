@@ -1,5 +1,5 @@
 .system-check {
-  min-height: 100vh;
+  /* min-height: 100vh; */
   background-color: #f5f7fa;
   padding: 2rem;
 }
@@ -51,17 +51,20 @@
 
 /* SystemCheck.css - Add these styles */
 .camera-preview {
-  margin-top: 15px;
-  text-align: center;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .camera-feed {
-  width: 100%;
-  max-width: 400px;
-  height: auto;
-  border-radius: 8px;
+
+  object-fit: cover;
+  border-radius: 16px;
   background: #000;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
+
+
 
 .preview-note {
   font-size: 12px;

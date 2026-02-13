@@ -962,7 +962,7 @@
 
 /* Fix for the answers header */
 .answers-header {
-  position: sticky;
+  position: relative;
   top: 0;
   background: white;
   z-index: 10;

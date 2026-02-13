@@ -193,7 +193,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                   </span>
                 </div>
                 <div className="question-text">{question.text}</div>
-                // In the options rendering section, update the option-item JSX:
+               
                 <div className="options-grid">
                   {question.options &&
                     Object.entries(question.options).map(([key, value]) => {
