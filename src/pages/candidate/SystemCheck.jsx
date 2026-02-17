@@ -262,6 +262,8 @@ function SystemCheck() {
                 autoPlay
                 playsInline
                 muted
+                disablePictureInPicture
+                controlsList="nodownload nofullscreen noremoteplayback"
                 className="camera-feed"
                 style={{
                   border: cameraReady
