@@ -7,6 +7,7 @@ import {
   uploadQuestionsCSV
 } from "../../api/examApi";
 import "../../styles/CreateExamWizard.css";
+import "../../styles/CreateExamModal.css";
 
 function CreateExamWizard() {
   const [createdExamId, setCreatedExamId] = useState(null);
@@ -270,8 +271,8 @@ function CreateExamWizard() {
       </div>
 
       {/* STEP 1 */}
-      {step === 1 && (
-        <div className="wizard-step">
+      {/* {step === 1 && (
+        <div className="wizard-step modal-card">
           <input name="title" placeholder="Exam Title" value={examDetails.title} onChange={handleDetailsChange} />
           <textarea name="description" placeholder="Description" value={examDetails.description} onChange={handleDetailsChange} />
           <input type="datetime-local" name="startDateTime" value={examDetails.startDateTime} onChange={handleDetailsChange} />
@@ -279,11 +280,99 @@ function CreateExamWizard() {
           <input type="number" name="duration" placeholder="Duration (minutes)" value={examDetails.duration} onChange={handleDetailsChange} />
           <button className="next-btn" onClick={goToStep2}>Next</button>
         </div>
+      )} */}
+      {step === 1 && (
+        <div className="wizard-step modal-card">
+
+          <div className="note-box">
+            <strong>Note:</strong> Dates should be in ISO format (YYYY-MM-DDTHH:MM:SS)
+          </div>
+
+          <div className="form-group">
+            <label>
+              Exam Title <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              name="title"
+              placeholder="Enter exam title"
+              value={examDetails.title}
+              onChange={handleDetailsChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>
+              Description <span className="required">*</span>
+            </label>
+            <textarea
+              name="description"
+              placeholder="Enter exam description"
+              value={examDetails.description}
+              onChange={handleDetailsChange}
+            />
+          </div>
+
+          <div className="date-row">
+            <div className="form-group">
+              <label>
+                Start Date & Time <span className="required">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                name="startDateTime"
+                value={examDetails.startDateTime}
+                onChange={handleDetailsChange}
+              />
+              <small className="helper-text">
+                Will be sent as: YYYY-MM-DDTHH:MM:SS
+              </small>
+            </div>
+
+            <div className="form-group">
+              <label>
+                End Date & Time <span className="required">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                name="endDateTime"
+                value={examDetails.endDateTime}
+                onChange={handleDetailsChange}
+              />
+              <small className="helper-text">
+                Will be sent as: YYYY-MM-DDTHH:MM:SS
+              </small>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>
+              Duration (minutes) <span className="required">*</span>
+            </label>
+            <input
+              type="number"
+              name="duration"
+              placeholder="e.g., 60"
+              value={examDetails.duration}
+              onChange={handleDetailsChange}
+            />
+            <small className="error-text">
+              Exam duration must fit between start and end time
+            </small>
+          </div>
+
+          <div className="step-actions">
+            <button className="next-btn" onClick={goToStep2}>
+              Next
+            </button>
+          </div>
+
+        </div>
       )}
 
       {/* STEP 2 */}
       {step === 2 && (
-        <div className="wizard-step">
+        <div className="wizard-step modal-card">
           <div className="upload-section">
             <h3>Upload Questions CSV</h3>
             <div className="format-info">
@@ -359,7 +448,7 @@ function CreateExamWizard() {
 
       {/* STEP 3 */}
       {step === 3 && (
-        <div className="wizard-step">
+        <div className="wizard-step modal-card">
           <h3 className="section-title">Invite Candidates</h3>
 
           <div className="invite-method-row">
@@ -416,7 +505,7 @@ function CreateExamWizard() {
                       onClick={() => removeCandidateField(index)}
                       title="Remove"
                     >
-                      🗑
+                      <span className="trash-icon">🗑</span>
                     </button>
                   )}
                 </div>

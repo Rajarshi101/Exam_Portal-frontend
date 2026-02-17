@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { uploadQuestionsCSV } from "../../api/examApi";
 import "../../styles/Modal.css";
+import "../../styles/CreateExamModal.css";
 
 function AddQuestionsModal({ examId, examTitle, onClose }) {
   const [questionsFile, setQuestionsFile] = useState(null);
@@ -85,7 +86,29 @@ function AddQuestionsModal({ examId, examTitle, onClose }) {
           <div className="upload-section">
             <h3>Upload Questions CSV</h3>
 
-            <input type="file" accept=".csv" onChange={handleCSVUpload} />
+            {/* <input type="file" accept=".csv" onChange={handleCSVUpload} /> */}
+
+            <div className="format-info">
+              <p><strong>CSV Format:</strong></p>
+              <p>text, optionA, optionB, optionC, optionD, correctOption, marks</p>
+              <p>
+                <small>
+                  Example: "What is JVM?","Java Virtual Machine","Java Variable Method","Java Verified Mode","None","A",5
+                </small>
+              </p>
+            </div>
+
+            <div className="file-upload-area">
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleCSVUpload}
+                id="questions-upload"
+              />
+              <label htmlFor="questions-upload" className="upload-label">
+                {questionsFile ? questionsFile.name : "Choose CSV File"}
+              </label>
+            </div>
 
             {/* Preview section */}
             {questions.length > 0 && (
@@ -130,7 +153,7 @@ function AddQuestionsModal({ examId, examTitle, onClose }) {
 
                 <div className="total-marks">
                   <p><strong>Total Marks:</strong> {questions.reduce((s, q) => s + q.marks, 0)}</p>
-                  <p><strong>Total Questions:</strong> {questions.length}</p>
+                  {/* <p><strong>Total Questions:</strong> {questions.length}</p> */}
                 </div>
               </div>
             )}
@@ -138,10 +161,11 @@ function AddQuestionsModal({ examId, examTitle, onClose }) {
         </div>
 
         <div className="modal-footer">
-          <button onClick={onClose} disabled={uploading}>Cancel</button>
+          <button onClick={onClose} disabled={uploading} className="btn-cancel">Cancel</button>
           <button
             onClick={handleUpload}
             disabled={!questionsFile || uploading || uploadSuccess}
+            className="btn-submit"
           >
             {uploading ? "Uploading..." : uploadSuccess ? "✓ Uploaded!" : "Upload Questions"}
           </button>

@@ -27,6 +27,27 @@
   padding: 0 20px;
 }
 
+.btn-create-exam {
+  background-color: #6503dd;       /* same green family */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-create-exam:hover {
+  background-color: #440294;
+  transform: translateY(-1px);
+}
+
+.btn-create-exam:active {
+  transform: translateY(0);
+}
+
 /* .logout-btn {
   background: linear-gradient(135deg, #ff4d4f, #ff7875);
   color: white;

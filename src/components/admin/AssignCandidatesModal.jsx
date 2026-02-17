@@ -165,7 +165,7 @@ function AssignCandidatesModal({ examId, examTitle, onClose }) {
                       onClick={() => removeCandidateField(index)}
                       title="Remove"
                     >
-                      ×
+                      <span className="trash-icon">🗑</span>
                     </button>
                   )}
                 </div>
