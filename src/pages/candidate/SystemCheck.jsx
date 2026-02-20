@@ -1,3 +1,4 @@
+import { setScreenStream } from "../../utils/screenStream";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { startExamSession } from "../../api/candidateApi";
@@ -55,6 +56,27 @@ function SystemCheck() {
   };
 
   // Request screen share permission
+  // const requestScreenShare = async () => {
+  //   try {
+  //     const stream = await navigator.mediaDevices.getDisplayMedia({
+  //       video: true,
+  //       audio: false,
+  //     });
+
+  //     // Handle when user stops sharing screen
+  //     stream.getVideoTracks()[0].onended = () => {
+  //       setScreenGranted(false);
+  //     };
+
+  //     setScreenGranted(true);
+  //     setError("");
+  //   } catch (err) {
+  //     if (err.name !== "NotAllowedError") {
+  //       setError("Screen share permission denied.");
+  //     }
+  //   }
+  // };
+
   const requestScreenShare = async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -62,19 +84,40 @@ function SystemCheck() {
         audio: false,
       });
 
-      // Handle when user stops sharing screen
-      stream.getVideoTracks()[0].onended = () => {
+      const track = stream.getVideoTracks()[0];
+
+      // Firefox compatible detection
+      const settings = track.getSettings();
+      console.log("Screen share settings:", settings);
+
+      // On Firefox displaySurface may be undefined
+      // So we only check if width & height match screen
+      if (
+        settings.width < window.screen.width - 50 ||
+        settings.height < window.screen.height - 50
+      ) {
+        alert("Please share your entire screen (not just a tab or window).");
+        track.stop();
+        return;
+      }
+
+      setScreenStream(stream);
+
+      track.onended = () => {
         setScreenGranted(false);
       };
 
       setScreenGranted(true);
       setError("");
+
     } catch (err) {
       if (err.name !== "NotAllowedError") {
         setError("Screen share permission denied.");
       }
     }
   };
+
+
 
   // Capture photo from webcam - FIXED VERSION
   const capturePhoto = async () => {
@@ -222,7 +265,7 @@ function SystemCheck() {
     return () => {
       if (streamRef.current) {
         const tracks = streamRef.current.getTracks();
-        tracks.forEach((track) => track.stop());
+        // tracks.forEach((track) => track.stop());
       }
     };
   }, []);
