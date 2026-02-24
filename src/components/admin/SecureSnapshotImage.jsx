@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { getSnapshotImage } from "../../api/examApi";
 
-function SecureSnapshotImage({ snapshotId, alt, className }) {
+function SecureSnapshotImage({ snapshotId, alt, className, isViolate }) {
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -13,6 +13,8 @@ function SecureSnapshotImage({ snapshotId, alt, className }) {
 
     const loadImage = async () => {
       try {
+        setLoading(true);
+        setError(false);
         if (!snapshotId) {
           setError(true);
           setLoading(false);
@@ -24,7 +26,8 @@ function SecureSnapshotImage({ snapshotId, alt, className }) {
         if (!isMounted) return;
         
         if (response.data) {
-          const blob = new Blob([response.data], { type: response.headers['content-type'] || 'image/jpeg' });
+          // Create blob URL from the response data
+          const blob = new Blob([response.data], { type: response.headers?.['content-type'] || 'image/jpeg' });
           objectUrl = URL.createObjectURL(blob);
           setImageUrl(objectUrl);
           setError(false);
@@ -77,6 +80,7 @@ function SecureSnapshotImage({ snapshotId, alt, className }) {
       src={imageUrl} 
       alt={alt || `Snapshot ${snapshotId?.substring(0, 8)}...`}
       className={className}
+      style={isViolate ? { border: '2px solid #dc2626' } : {}}
       onError={() => setError(true)}
     />
   );

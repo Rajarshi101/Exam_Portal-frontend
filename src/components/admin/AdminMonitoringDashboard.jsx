@@ -5,6 +5,7 @@ import {
   getExamQuestions,
 } from "../../api/examApi";
 import SecureSnapshotImage from "./SecureSnapshotImage";
+import SnapshotViewerModal from "./SnapshotViewerModal"; // Add this import
 import "../../styles/AdminMonitoringDashboard.css";
 
 function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
@@ -16,6 +17,11 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
   const [expandedAnswers, setExpandedAnswers] = useState(null);
   const [examQuestions, setExamQuestions] = useState({});
   const [questionsLoading, setQuestionsLoading] = useState({});
+
+  // New state for snapshot viewer modal
+  const [showSnapshotViewer, setShowSnapshotViewer] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
+
 
   useEffect(() => {
     if (examId) {
@@ -43,6 +49,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
     try {
       setSubmissionsLoading(true);
       const response = await getExamSubmissions(id);
+      console.log("Submissions response:", response.data); // Debug log
       setSubmissions(response.data || []);
     } catch (error) {
       console.error("Error fetching submissions:", error);
@@ -68,18 +75,29 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
     }
   };
 
+  const handleViewSnapshotModal = (submission) => {
+    setSelectedSubmission(submission);
+    setShowSnapshotViewer(true);
+    // Close other expanded views
+    setExpandedSubmission(null);
+    setExpandedAnswers(null);
+  };
+
   const handleViewSnapshot = (submissionId) => {
     setExpandedSubmission((prev) =>
       prev === submissionId ? null : submissionId,
     );
-    // Close answers when opening snapshots
+    
+    // Close answers and modal when opening inline snapshots
     setExpandedAnswers(null);
+    setShowSnapshotViewer(false);
   };
 
   const handleViewAnswers = (submissionId) => {
     setExpandedAnswers((prev) => (prev === submissionId ? null : submissionId));
     // Close snapshots when opening answers
     setExpandedSubmission(null);
+    setShowSnapshotViewer(false);
   };
 
   const getStatusBadge = (status) => {
@@ -274,6 +292,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                       <th>Time Taken</th>
                       <th>Started At</th>
                       <th>Submitted At</th>
+                      <th>Snapshots</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -338,23 +357,21 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                           <td>{formatDateTime(submission.submittedAt)}</td>
                           <td>
                             <div className="action-buttons">
-                              {submission.snapshotIds &&
-                                submission.snapshotIds.length > 0 && (
-                                  <button
-                                    className="btn-action btn-snapshot"
-                                    onClick={() =>
-                                      handleViewSnapshot(
-                                        submission.submissionId,
-                                      )
-                                    }
-                                  >
-                                    {expandedSubmission ===
-                                    submission.submissionId
-                                      ? "Hide"
-                                      : "View"}{" "}
-                                    Snapshots
-                                  </button>
-                                )}
+                              {submission.snapshots && submission.snapshots.length > 0 ? (
+                                <button
+                                  className="btn-view-snapshots"
+                                  onClick={() => handleViewSnapshotModal(submission)}
+                                  title={`View ${submission.snapshots.length} snapshots (${submission.snapshots.filter(s => s.isViolate).length} violations)`}
+                                >
+                                  {submission.snapshots.length}
+                                  {submission.snapshots.filter(s => s.isViolate).length > 0 && (
+                                    <span className="violation-indicator">⚠️</span>
+                                  )}
+                                </button>
+                              ) : (
+                                <span className="no-snapshots">No snapshots</span>
+                              )}
+
                               {submission.completed && (
                                 <button
                                   className="btn-action btn-answers"
@@ -376,39 +393,48 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                           </td>
                         </tr>
 
-                        {/* Snapshots Row */}
+                        {/* Snapshots Row (Inline view - optional, you can remove this if using modal only) */}
+                        {/* Snapshots Row (Inline view) */}
                         {expandedSubmission === submission.submissionId &&
-                          submission.snapshotIds &&
-                          submission.snapshotIds.length > 0 && (
+                          submission.snapshots &&
+                          submission.snapshots.length > 0 && (
                             <tr className="snapshots-row">
-                              <td colSpan="10">
+                              <td colSpan="11">
                                 <div className="snapshots-container">
                                   <h4>
                                     Snapshots for {submission.candidateName}
+                                    <span className="snapshot-count">{submission.snapshots.length} images</span>
                                   </h4>
                                   <div className="snapshots-grid">
-                                    {submission.snapshotIds.map(
-                                      (snapshotId, index) => (
-                                        <div
-                                          key={snapshotId}
-                                          className="snapshot-item"
-                                        >
-                                          <div className="snapshot-header">
-                                            <span>Snapshot {index + 1}</span>
-                                            <span className="snapshot-id">
-                                              {snapshotId.substring(0, 8)}...
-                                            </span>
-                                          </div>
-                                          <div className="snapshot-image">
-                                            <SecureSnapshotImage
-                                              snapshotId={snapshotId}
-                                              alt={`Snapshot ${index + 1} for ${submission.candidateName}`}
-                                              className="snapshot-img"
-                                            />
-                                          </div>
+                                    {submission.snapshots.map((snapshot, index) => (
+                                      <div
+                                        key={snapshot.snapshotId}
+                                        className={`snapshot-item ${snapshot.isViolate ? 'violation' : ''}`}
+                                      >
+                                        <div className="snapshot-header">
+                                          <span className="snapshot-number">Snapshot {index + 1}</span>
+                                          {snapshot.isViolate && (
+                                            <span className="violation-badge">⚠️ Violation</span>
+                                          )}
                                         </div>
-                                      ),
-                                    )}
+                                        <div className="snapshot-image">
+                                          <SecureSnapshotImage
+                                            snapshotId={snapshot.snapshotId}
+                                            alt={`Snapshot ${index + 1} for ${submission.candidateName}`}
+                                            className="snapshot-img"
+                                            isViolate={snapshot.isViolate}
+                                          />
+                                        </div>
+                                        <div className="snapshot-footer">
+                                          <span className="snapshot-time">
+                                            🕐 {formatDateTime(snapshot.createdAt)}
+                                          </span>
+                                          <span className="snapshot-id">
+                                            ID: {snapshot.snapshotId.substring(0, 8)}...
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
                                 </div>
                               </td>
@@ -418,7 +444,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                         {/* Answers Preview Row */}
                         {expandedAnswers === submission.submissionId && (
                           <tr className="answers-row">
-                            <td colSpan="10">
+                            <td colSpan="11">
                               {isLoadingQuestions ? (
                                 <div className="loading-small">
                                   Loading questions...
@@ -473,10 +499,27 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                     })()}
                   </p>
                 </div>
+                <div className="stat-card">
+                  <h3>Total Violations</h3>
+                  <p className="stat-value">
+                    {submissions.reduce((sum, s) => sum + (s.violations || 0), 0)}
+                  </p>
+                </div>
               </div>
             </>
           )}
         </div>
+        
+        {/* Snapshot Viewer Modal */}
+        {showSnapshotViewer && selectedSubmission && (
+          <SnapshotViewerModal
+            submission={selectedSubmission}
+            onClose={() => {
+              setShowSnapshotViewer(false);
+              setSelectedSubmission(null);
+            }}
+          />
+        )}
       </div>
     );
   }
