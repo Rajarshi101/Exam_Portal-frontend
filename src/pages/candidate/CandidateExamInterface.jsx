@@ -243,32 +243,30 @@ function CandidateExamInterface() {
     screenVideoRef.current = video;
   };
  
- 
-  const scheduleThreeSnapshots = useCallback(async () => {
-    const totalDurationSeconds = location.state?.duration * 60 || 3600;
- 
-    const snapshotTimes = [
-      Math.floor(totalDurationSeconds * 0.25),
-      Math.floor(totalDurationSeconds * 0.5),
-      Math.floor(totalDurationSeconds * 0.75)
-    ];
- 
-    snapshotTimes.forEach((snapshotTime, index) => {
-      setTimeout(async () => {
-        if (submitted) return;
- 
-        const imageFile = await captureFullScreenFrame();
- 
-        if (imageFile) {
-          await submitSnapshot(submissionId, imageFile);
-          console.log(`Full screen snapshot #${index + 1} submitted`);
-        }
-      }, snapshotTime * 1000);
-    });
- 
-  }, [submissionId, location.state?.duration, submitted]);
- 
- 
+ const scheduleThreeSnapshots = useCallback(async () => {
+  const totalDurationSeconds = location.state?.duration * 60 || 3600;
+
+  const snapshotTimes = [
+    Math.floor(totalDurationSeconds * 0.25),
+    Math.floor(totalDurationSeconds * 0.5),
+    Math.floor(totalDurationSeconds * 0.75)
+  ];
+
+  snapshotTimes.forEach((snapshotTime, index) => {
+    setTimeout(async () => {
+      if (submitted) return;
+
+      const imageFile = await captureFullScreenFrame();
+
+      if (imageFile) {
+        // Regular snapshots - no violate flag (false by default)
+        await submitSnapshot(submissionId, imageFile, false);
+        console.log(`Full screen snapshot #${index + 1} submitted`);
+      }
+    }, snapshotTime * 1000);
+  });
+
+}, [submissionId, location.state?.duration, submitted]);
  
   /* ---------- CAMERA SETUP (FIXED) ---------- */
   const initializeCamera = async () => {
@@ -552,56 +550,55 @@ function CandidateExamInterface() {
   }, [isFullscreen, submitted]);
  
   /* ---------- VIOLATION HANDLER ---------- */
-  const triggerViolation = async (reason) => {
-    if (violationCooldownRef.current || submitted || violationLockRef.current || fullscreenRequired) {
-      return;
-    }
- 
-    violationCooldownRef.current = true;
-    setTimeout(() => {
-      violationCooldownRef.current = false;
-    }, 3000);
- 
-    violationLockRef.current = true;
- 
-    try {
- 
-      /* 📸 TAKE VIOLATION SCREENSHOT */
-      if (!snapshotInProgressRef.current) {
-        snapshotInProgressRef.current = true;
- 
-        const imageFile = await captureFullScreenFrame();
- 
-        if (imageFile) {
-          await submitSnapshot(submissionId, imageFile);
-          console.log("Violation screenshot submitted");
-        }
- 
-        snapshotInProgressRef.current = false;
+const triggerViolation = async (reason) => {
+  if (violationCooldownRef.current || submitted || violationLockRef.current || fullscreenRequired) {
+    return;
+  }
+
+  violationCooldownRef.current = true;
+  setTimeout(() => {
+    violationCooldownRef.current = false;
+  }, 3000);
+
+  violationLockRef.current = true;
+
+  try {
+    /* 📸 TAKE VIOLATION SCREENSHOT WITH violate=true PARAMETER */
+    if (!snapshotInProgressRef.current) {
+      snapshotInProgressRef.current = true;
+
+      const imageFile = await captureFullScreenFrame();
+
+      if (imageFile) {
+        // Pass true for violate parameter
+        await submitSnapshot(submissionId, imageFile, true);
+        console.log("Violation screenshot submitted with violate=true");
       }
- 
-      const formattedAnswers = formatAnswersForBackend();
-     
-      // Submit violation to backend
-      await submitViolation(submissionId, formattedAnswers);
-     
-      setWarnings(prev => {
-        const newCount = prev + 1;
-       
-        if (newCount > MAX_WARNINGS) {
-          handleViolationLimitExceeded();
-        }
-       
-        return newCount;
-      });
- 
-    } catch (error) {
-      console.error("Error in triggerViolation:", error);
-    } finally {
-      violationLockRef.current = false;
+
+      snapshotInProgressRef.current = false;
     }
-  };
- 
+
+    const formattedAnswers = formatAnswersForBackend();
+    
+    // Submit violation to backend
+    await submitViolation(submissionId, formattedAnswers);
+    
+    setWarnings(prev => {
+      const newCount = prev + 1;
+     
+      if (newCount > MAX_WARNINGS) {
+        handleViolationLimitExceeded();
+      }
+     
+      return newCount;
+    });
+
+  } catch (error) {
+    console.error("Error in triggerViolation:", error);
+  } finally {
+    violationLockRef.current = false;
+  }
+};
   /* ---------- VIOLATION LIMIT EXCEEDED ---------- */
   const handleViolationLimitExceeded = () => {
     if (submitted) return;

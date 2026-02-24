@@ -31,6 +31,8 @@ export const submitViolation = async (submissionId, payload = {}) => {
   }
 };
 
+
+
 export const submitExamAnswers = async (submissionId, answers) => {
   try {
     const response = await api.post(
@@ -73,13 +75,44 @@ export const saveProgress = async (submissionId, answers) => {
   }
 };
 
-export const submitSnapshot = async (submissionId, imageFile) => {
+// export const submitSnapshot = async (submissionId, imageFile) => {
+//   try {
+//     const formData = new FormData();
+//     formData.append("image", imageFile);
+    
+//     const response = await api.post(
+//       `/api/exams/session/${submissionId}/snapshots`,
+//       formData,
+//       {
+//         headers: {
+//           "Content-Type": "multipart/form-data",
+//         },
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "Error submitting snapshot:",
+//       error.response?.data || error.message
+//     );
+//     throw error;
+//   }
+// };
+
+
+export const submitSnapshot = async (submissionId, imageFile, violate = false) => {
   try {
     const formData = new FormData();
     formData.append("image", imageFile);
     
+    // Construct URL with optional violate parameter
+    let url = `/api/exams/session/${submissionId}/snapshots`;
+    if (violate) {
+      url += '?violate=true';
+    }
+    
     const response = await api.post(
-      `/api/exams/session/${submissionId}/snapshots`,
+      url,
       formData,
       {
         headers: {
