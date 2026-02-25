@@ -123,7 +123,7 @@
   border-color: #4a90e2;
 }
 
-.filter-btn.violations.active {
+.filter-btn.violation.active {
   background-color: #dc2626;
   border-color: #dc2626;
 }

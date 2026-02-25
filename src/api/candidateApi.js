@@ -73,17 +73,45 @@ export const saveProgress = async (submissionId, answers) => {
   }
 };
 
-export const submitSnapshot = async (submissionId, imageFile, violate = false) => {
+// export const submitSnapshot = async (submissionId, imageFile, violate = false) => {
+//   try {
+//     const formData = new FormData();
+//     formData.append("image", imageFile);
+    
+//     // Construct URL with optional violate parameter
+//     let url = `/api/exams/session/${submissionId}/snapshots`;
+//     if (violate) {
+//       url += '?violate=true';
+//     }
+    
+//     const response = await api.post(
+//       url,
+//       formData,
+//       {
+//         headers: {
+//           "Content-Type": "multipart/form-data",
+//         },
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "Error submitting snapshot:",
+//       error.response?.data || error.message
+//     );
+//     throw error;
+//   }
+// };
+
+ 
+export const submitSnapshot = async (submissionId, imageFile) => {
   try {
     const formData = new FormData();
     formData.append("image", imageFile);
-    
+   
     // Construct URL with optional violate parameter
     let url = `/api/exams/session/${submissionId}/snapshots`;
-    if (violate) {
-      url += '?violate=true';
-    }
-    
+   
     const response = await api.post(
       url,
       formData,
@@ -102,3 +130,24 @@ export const submitSnapshot = async (submissionId, imageFile, violate = false) =
     throw error;
   }
 };
+ 
+ 
+export const submitViolationSnapshot = async (submissionId, imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+   
+    const url = `/api/exams/session/${submissionId}/snapshots?violate=true`;
+   
+    const response = await api.post(url, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting violation snapshot:", error.response?.data || error.message);
+    throw error;
+  }
+};
+ 

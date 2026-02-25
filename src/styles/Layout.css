@@ -1,0 +1,56 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* HEADER */
+.app-header {
+  width: 95.9%;
+  height: 60px;
+  background-color: #1f2937;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.app-title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: #60a5fa;
+}
+
+/* FOOTER */
+.app-footer {
+  width: 100%;
+  background-color: #1f2937;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  margin-top: auto;
+}
+
+/* PAGE WRAPPER */
+.page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.page-content {
+  flex: 1;
+}

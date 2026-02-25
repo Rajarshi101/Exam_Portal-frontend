@@ -11,6 +11,9 @@ import CreateExamWizard from "../../components/admin/CreateExamWizard";
 
 import "../../styles/AdminDashboard.css";
 
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
+
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("allExams");
   const [selectedExamId, setSelectedExamId] = useState(null);
@@ -56,6 +59,8 @@ function AdminDashboard() {
   };
 
   return (
+    <div className="page-container">
+      <Header />
     <div className="admin-dashboard">
       <AdminSidebar setActiveTab={setActiveTab} activeTab={activeTab} />
 
@@ -124,6 +129,8 @@ function AdminDashboard() {
       {showCreateExamModal && (
         <CreateExamModal onClose={() => setShowCreateExamModal(false)} />
       )}
+    </div>
+      <Footer />
     </div>
   );
 }

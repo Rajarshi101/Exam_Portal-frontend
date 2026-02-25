@@ -1,7 +1,7 @@
 import { getScreenStream, clearScreenStream } from "../../utils/screenStream";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { submitViolation, submitExamAnswers, submitSnapshot } from "../../api/candidateApi";
+import { submitViolation, submitExamAnswers, submitSnapshot, submitViolationSnapshot } from "../../api/candidateApi";
 import "../../styles/CandidateExamInterface.css";
  
 // Import your API instance
@@ -145,7 +145,7 @@ function CandidateExamInterface() {
     if (!screenVideoRef.current) return null;
  
     const video = screenVideoRef.current;
-
+ 
     // 🔥 Wait for next rendered frame (Firefox safe)
     await new Promise((resolve) => {
       requestAnimationFrame(() => {
@@ -154,7 +154,7 @@ function CandidateExamInterface() {
         });
       });
     });
-
+ 
     // Ensure dimensions are valid
     if (video.videoWidth === 0 || video.videoHeight === 0) {
       console.warn("Video not ready for capture");
@@ -573,7 +573,7 @@ function CandidateExamInterface() {
         const imageFile = await captureFullScreenFrame();
  
         if (imageFile) {
-          await submitSnapshot(submissionId, imageFile, true);
+          await submitViolationSnapshot(submissionId, imageFile);
           console.log("Violation screenshot submitted");
         }
  
@@ -1198,4 +1198,6 @@ function CandidateExamInterface() {
   );
 }
  
-export default CandidateExamInterface;
+export default CandidateExamInterface
+
+console. Warn 

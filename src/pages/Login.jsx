@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../api/authApi";
 import { jwtDecode } from "jwt-decode";
 import "../styles/Login.css";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -30,7 +32,9 @@ function Login() {
   };
 
   return (
-    <div className="login-container">
+    <div className="page-container">
+      <Header />
+    <div className="page-content login-container">
       <form className="login-box" onSubmit={handleLogin}>
         <h2>Exam Portal Login</h2>
 
@@ -54,6 +58,8 @@ function Login() {
 
         {error && <p className="error">{error}</p>}
       </form>
+    </div>
+      <Footer />
     </div>
   );
 }

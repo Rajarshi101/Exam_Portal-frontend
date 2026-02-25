@@ -3,6 +3,8 @@ import CandidateSidebar from "../../components/candidate/CandidateSidebar";
 import CandidateExamCard from "../../components/candidate/CandidateExamCard";
 import { getStudentExams } from "../../api/candidateApi";
 import "../../styles/CandidateDashboard.css";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 
 function CandidateDashboard() {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -97,6 +99,8 @@ function CandidateDashboard() {
   };
 
   return (
+    <div className="page-container">
+      <Header />
     <div className="candidate-dashboard">
       <CandidateSidebar setActiveTab={setActiveTab} />
 
@@ -193,6 +197,8 @@ function CandidateDashboard() {
           </div>
         )}
       </div>
+    </div>
+      <Footer />
     </div>
   );
 }

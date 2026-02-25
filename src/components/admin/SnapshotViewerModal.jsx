@@ -96,7 +96,7 @@ function SnapshotViewerModal({ submission, onClose }) {
             All ({snapshots.length})
           </button>
           <button 
-            className={`filter-btn violations ${filter === 'violations' ? 'active' : ''}`}
+            className={`filter-btn violation ${filter === 'violations' ? 'active' : ''}`}
             onClick={() => setFilter('violations')}
           >
             ⚠️ Violations ({getViolationCount()})
