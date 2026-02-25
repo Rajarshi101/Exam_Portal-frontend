@@ -573,7 +573,7 @@ function CandidateExamInterface() {
         const imageFile = await captureFullScreenFrame();
  
         if (imageFile) {
-          await submitSnapshot(submissionId, imageFile);
+          await submitSnapshot(submissionId, imageFile, true);
           console.log("Violation screenshot submitted");
         }
  

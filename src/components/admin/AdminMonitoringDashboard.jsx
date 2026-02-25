@@ -292,7 +292,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                       <th>Time Taken</th>
                       <th>Started At</th>
                       <th>Submitted At</th>
-                      <th>Snapshots</th>
+                      {/* <th>Snapshots</th> */}
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -359,10 +359,11 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                             <div className="action-buttons">
                               {submission.snapshots && submission.snapshots.length > 0 ? (
                                 <button
-                                  className="btn-view-snapshots"
+                                  className="btn-action btn-snapshots"
                                   onClick={() => handleViewSnapshotModal(submission)}
-                                  title={`View ${submission.snapshots.length} snapshots (${submission.snapshots.filter(s => s.isViolate).length} violations)`}
+                                  title={`View ${submission.snapshots.length} snapshots`}
                                 >
+                                  {"View Snapshots: "}
                                   {submission.snapshots.length}
                                   {submission.snapshots.filter(s => s.isViolate).length > 0 && (
                                     <span className="violation-indicator">⚠️</span>
@@ -382,11 +383,9 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                                 >
                                   {isLoadingQuestions
                                     ? "Loading..."
-                                    : expandedAnswers ===
-                                        submission.submissionId
-                                      ? "Hide"
-                                      : "View"}{" "}
-                                  Answers
+                                    : expandedAnswers === submission.submissionId
+                                      ? "Hide Answers"
+                                      : "View Answers"}
                                 </button>
                               )}
                             </div>
@@ -409,7 +408,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                                     {submission.snapshots.map((snapshot, index) => (
                                       <div
                                         key={snapshot.snapshotId}
-                                        className={`snapshot-item ${snapshot.isViolate ? 'violation' : ''}`}
+                                        className={`snapshot-item ${snapshot.isViolate ? "violation" : ""}`}
                                       >
                                         <div className="snapshot-header">
                                           <span className="snapshot-number">Snapshot {index + 1}</span>
@@ -427,14 +426,14 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                                         </div>
                                         <div className="snapshot-footer">
                                           <span className="snapshot-time">
-                                            🕐 {formatDateTime(snapshot.createdAt)}
+                                            🕐{" "} {formatDateTime(snapshot.createdAt,)}
                                           </span>
                                           <span className="snapshot-id">
-                                            ID: {snapshot.snapshotId.substring(0, 8)}...
+                                            ID:{" "} {snapshot.snapshotId.substring(0, 8)}...
                                           </span>
                                         </div>
                                       </div>
-                                    ))}
+                                    ),)}
                                   </div>
                                 </div>
                               </td>
@@ -502,7 +501,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                 <div className="stat-card">
                   <h3>Total Violations</h3>
                   <p className="stat-value">
-                    {submissions.reduce((sum, s) => sum + (s.violations || 0), 0)}
+                    {submissions.reduce((sum, s) => sum + (s.violations || 0), 0,)}
                   </p>
                 </div>
               </div>

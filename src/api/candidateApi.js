@@ -73,13 +73,19 @@ export const saveProgress = async (submissionId, answers) => {
   }
 };
 
-export const submitSnapshot = async (submissionId, imageFile) => {
+export const submitSnapshot = async (submissionId, imageFile, violate = false) => {
   try {
     const formData = new FormData();
     formData.append("image", imageFile);
     
+    // Construct URL with optional violate parameter
+    let url = `/api/exams/session/${submissionId}/snapshots`;
+    if (violate) {
+      url += '?violate=true';
+    }
+    
     const response = await api.post(
-      `/api/exams/session/${submissionId}/snapshots`,
+      url,
       formData,
       {
         headers: {
