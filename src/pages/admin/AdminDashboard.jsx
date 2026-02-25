@@ -61,7 +61,7 @@ function AdminDashboard() {
   return (
     <div className="page-container">
       <Header />
-    <div className="admin-dashboard">
+    <div className="page-content admin-dashboard">
       <AdminSidebar setActiveTab={setActiveTab} activeTab={activeTab} />
 
       <div className="admin-main">

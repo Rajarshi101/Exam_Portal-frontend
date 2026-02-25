@@ -101,7 +101,7 @@ function CandidateDashboard() {
   return (
     <div className="page-container">
       <Header />
-    <div className="candidate-dashboard">
+    <div className="page-content candidate-dashboard">
       <CandidateSidebar setActiveTab={setActiveTab} />
 
       <div className="candidate-content">
