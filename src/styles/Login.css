@@ -1,31 +1,115 @@
+@import url('https://fonts.googleapis.com/css?family=Lato:300,400');
+
 .login-container {
-  height: 100vh;
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Lato', sans-serif;
+  background: linear-gradient(
+    60deg,
+    rgba(84,58,183,1) 0%,
+    rgba(0,172,193,1) 100%
+  );
+  /* color: white; */
+}
+
+/* ================= WAVE BACKGROUND ================= */
+
+/* .wave-header {
+  position: relative;
+  
+  flex: 1;
+} */
+
+.inner-header {
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(to right, #141e30, #243b55);
+}
+
+.inner-header h1 {
+  font-weight: 300;
+  letter-spacing: 2px;
+  font-size: 42px;
+}
+
+.waves {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 120px;
+  min-height: 100px;
+  max-height: 150px;
+}
+
+/* Wave animation */
+.parallax > use {
+  animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
+}
+
+.parallax > use:nth-child(1) {
+  animation-delay: -2s;
+  animation-duration: 7s;
+}
+
+.parallax > use:nth-child(2) {
+  animation-delay: -3s;
+  animation-duration: 10s;
+}
+
+.parallax > use:nth-child(3) {
+  animation-delay: -4s;
+  animation-duration: 13s;
+}
+
+.parallax > use:nth-child(4) {
+  animation-delay: -5s;
+  animation-duration: 20s;
+}
+
+@keyframes move-forever {
+  0% {
+    transform: translate3d(-90px,0,0);
+  }
+  100% {
+    transform: translate3d(85px,0,0);
+  }
+}
+
+/* ================= LOGIN FORM ================= */
+
+.login-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
 }
 
 .login-box {
   background: white;
   padding: 2.5rem;
-  border-radius: 10px;
-  width: 320px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  width: 340px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+  text-align: center;
 }
 
 .login-box h2 {
-  text-align: center;
   margin-bottom: 1.5rem;
+  font-weight: 400;
 }
 
-.login-box input,
-.login-box select {
+.login-box input {
   width: 100%;
   padding: 10px;
   margin-bottom: 1rem;
-  border-radius: 5px;
+  border-radius: 6px;
   border: 1px solid #ccc;
+  font-size: 14px;
 }
 
 .login-box button {
@@ -34,10 +118,17 @@
   background: #243b55;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
+  transition: 0.3s ease;
 }
 
 .login-box button:hover {
   background: #141e30;
+}
+
+.error {
+  margin-top: 10px;
+  color: red;
+  font-size: 13px;
 }
