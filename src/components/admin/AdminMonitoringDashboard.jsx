@@ -342,6 +342,17 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                             )}
                           </td>
                           <td>
+                            {submission.isQualify ? (
+                              <span className="qualify-badge qualify">
+                                 Qualified
+                              </span>
+                            ) : (
+                              <span className="qualify-badge not-qualify">
+                                 Not Qualified
+                              </span>
+                            )}
+                          </td>
+                          <td>
                             <span
                               className={`violations ${submission.violations > 2 ? "high" : submission.violations > 0 ? "medium" : ""}`}
                             >
@@ -398,7 +409,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                           submission.snapshots &&
                           submission.snapshots.length > 0 && (
                             <tr className="snapshots-row">
-                              <td colSpan="11">
+                              <td colSpan="12">
                                 <div className="snapshots-container">
                                   <h4>
                                     Snapshots for {submission.candidateName}
@@ -443,7 +454,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                         {/* Answers Preview Row */}
                         {expandedAnswers === submission.submissionId && (
                           <tr className="answers-row">
-                            <td colSpan="11">
+                            <td colSpan="12">
                               {isLoadingQuestions ? (
                                 <div className="loading-small">
                                   Loading questions...

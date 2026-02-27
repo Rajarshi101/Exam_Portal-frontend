@@ -291,13 +291,14 @@ function CreateExamModal({ onClose }) {
     description: "",
     startDate: "",
     endDate: "",
-    duration: ""
+    duration: "",
+    cutoff: "",
   });
 
   const handleChange = (e) => {
     setExamDetails({
       ...examDetails,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -338,13 +339,20 @@ function CreateExamModal({ onClose }) {
         return decoded.adminId.toString();
       }
       
-      console.warn("No adminId found in token. Available fields:", Object.keys(decoded));
+      console.warn("No adminId found in token. Available fields:", Object.keys(decoded),);
       return null;
     } catch (error) {
       console.error("Failed to decode token:", error);
       return null;
     }
   };
+
+  const cutoff = parseFloat(examDetails.cutoff);
+
+  if (cutoff < 0 || cutoff > 100) {
+    alert("Cutoff must be between 0 and 100");
+    return;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -357,7 +365,7 @@ function CreateExamModal({ onClose }) {
     }
     
     // Validation
-    if (Object.values(examDetails).some(v => !v)) {
+    if (Object.values(examDetails).some((v) => !v)) {
       alert("Please fill all fields");
       return;
     }
@@ -383,7 +391,7 @@ function CreateExamModal({ onClose }) {
 
     const totalMinutes = (end - start) / (1000 * 60);
     if (duration > totalMinutes) {
-      alert(`Exam duration (${duration} min) cannot exceed time between start and end (${Math.floor(totalMinutes)} min)`);
+      alert(`Exam duration (${duration} min) cannot exceed time between start and end (${Math.floor(totalMinutes)} min)`,);
       return;
     }
 
@@ -405,19 +413,19 @@ function CreateExamModal({ onClose }) {
         description: examDetails.description,
         duration: duration,
         startDate: formatDateForAPI(examDetails.startDate), // Will be "2026-01-01T10:00:00"
-        endDate: formatDateForAPI(examDetails.endDate)      // Will be "2026-01-01T11:00:00"
+        endDate: formatDateForAPI(examDetails.endDate),      // Will be "2026-01-01T11:00:00"
       };
 
       console.log("📤 Creating exam with data:", examData);
       console.log("📤 Date format check:");
-      console.log("  startDate:", examData.startDate, "(should have T, not space)");
+      console.log("  startDate:", examData.startDate, "(should have T, not space)",);
       console.log("  endDate:", examData.endDate, "(should have T, not space)");
       
       // Make the API call
       const response = await createExam(adminId, examData);
       console.log("✅ Exam created successfully:", response.data);
       
-      alert(`✅ Exam "${examDetails.title}" created successfully! Status: DRAFT\n\nExam ID: ${response.data.id}\n\nNext steps:\n1. Add questions\n2. Publish the exam\n3. Assign candidates`);
+      alert(`✅ Exam "${examDetails.title}" created successfully! Status: DRAFT\n\nExam ID: ${response.data.id}\n\nNext steps:\n1. Add questions\n2. Publish the exam\n3. Assign candidates`,);
       
       onClose();
       
@@ -442,7 +450,7 @@ Please check:
       } else if (error.response?.data?.message) {
         alert(`❌ Failed to create exam: ${error.response.data.message}`);
       } else if (error.response?.status === 400) {
-        alert(`❌ Bad request (400). Likely date format issue.\n\nBackend expects: "2026-01-01T10:00:00"\nCheck console for details.`);
+        alert(`❌ Bad request (400). Likely date format issue.\n\nBackend expects: "2026-01-01T10:00:00"\nCheck console for details.`,);
       } else if (error.message) {
         alert(`❌ Network error: ${error.message}`);
       } else {
@@ -547,6 +555,26 @@ Please check:
               />
               <small className="hint">Exam duration must fit between start and end time</small>
             </div>
+        
+            <div className="form-group">
+              <label htmlFor="cutoff">Cutoff (%) *</label>
+              <input
+                type="number"
+                id="cutoff"
+                name="cutoff"
+                value={examDetails.cutoff}
+                onChange={handleChange}
+                placeholder="e.g., 40"
+                min="0"
+                max="100"
+                step="0.01"
+                required
+              />
+              <small className="hint">
+                Candidate must score ≥ cutoff to qualify
+              </small>
+            </div>
+
           </div>
 
           <div className="modal-footer">

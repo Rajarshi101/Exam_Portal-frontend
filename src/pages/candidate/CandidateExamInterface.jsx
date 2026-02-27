@@ -51,6 +51,17 @@ function CandidateExamInterface() {
   const snapshotInProgressRef = useRef(false);
   const cameraRetryCountRef = useRef(0);
   const maxCameraRetries = 3;
+
+    
+  // CRITICAL FIX: Track violation count with ref
+  const violationCountRef = useRef(0);
+  
+  // FIX: Prevent multiple triggers from same action
+  const violationTriggeredRef = useRef(false);
+  
+  // Debug event log
+  const eventLogRef = useRef([]);
+
  
   const MAX_WARNINGS = 2;
  
@@ -66,6 +77,18 @@ function CandidateExamInterface() {
     });
     return formatted;
   }, [answers, questions]);
+
+  
+  // Debug log function
+  const logEvent = (eventName) => {
+    const timestamp = new Date().toISOString();
+    eventLogRef.current.push({ event: eventName, time: timestamp });
+    console.log(`[EVENT] ${eventName} at ${timestamp}`);
+    if (eventLogRef.current.length > 10) {
+      eventLogRef.current.shift();
+    }
+  };
+
  
   /* ---------- SCREENSHOT CAPTURE (Tab only) ---------- */
   // const captureTabScreenshot = async () => {
@@ -210,38 +233,38 @@ function CandidateExamInterface() {
    
   // }, [submissionId]);
  
-  const initializeScreenVideo = async () => {
-    const stream = getScreenStream();
+  // const initializeScreenVideo = async () => {
+  //   const stream = getScreenStream();
  
-    if (!stream || stream.getVideoTracks()[0].readyState === "ended") {
-      alert("Screen share not active. Please restart exam.");
-      navigate("/candidate-dashboard");
-      return;
-    }
+  //   if (!stream || stream.getVideoTracks()[0].readyState === "ended") {
+  //     alert("Screen share not active. Please restart exam.");
+  //     navigate("/candidate-dashboard");
+  //     return;
+  //   }
  
-    screenStreamRef.current = stream;
+  //   screenStreamRef.current = stream;
  
-    const video = document.createElement("video");
-    video.srcObject = stream;
-    video.muted = true;
-    video.playsInline = true;
+  //   const video = document.createElement("video");
+  //   video.srcObject = stream;
+  //   video.muted = true;
+  //   video.playsInline = true;
  
-    await video.play();
+  //   await video.play();
  
-    // Firefox-safe wait for dimensions
-    await new Promise((resolve) => {
-      const checkReady = () => {
-        if (video.videoWidth > 0 && video.videoHeight > 0) {
-          resolve();
-        } else {
-          requestAnimationFrame(checkReady);
-        }
-      };
-      checkReady();
-    });
+  //   // Firefox-safe wait for dimensions
+  //   await new Promise((resolve) => {
+  //     const checkReady = () => {
+  //       if (video.videoWidth > 0 && video.videoHeight > 0) {
+  //         resolve();
+  //       } else {
+  //         requestAnimationFrame(checkReady);
+  //       }
+  //     };
+  //     checkReady();
+  //   });
  
-    screenVideoRef.current = video;
-  };
+  //   screenVideoRef.current = video;
+  // };
  
  
   const scheduleThreeSnapshots = useCallback(async () => {
@@ -414,6 +437,157 @@ function CandidateExamInterface() {
       console.error("Camera health check error:", error);
     }
   }, [cameraStream, cameraActive, submitted, fullscreenRequired]);
+
+  
+  /* ---------- FIXED: VIOLATION HANDLER WITH REDIRECT ---------- */
+  const triggerViolation = async (reason) => {
+    // Guard clauses
+    if (violationCooldownRef.current || submitted || violationLockRef.current) {
+      console.log("Violation blocked:", { 
+        cooldown: violationCooldownRef.current, 
+        submitted, 
+        locked: violationLockRef.current
+      });
+      return;
+    }
+
+    // Check if already at max violations
+    if (violationCountRef.current >= MAX_WARNINGS) {
+      console.log("Already at max violations, redirecting to dashboard");
+      handleViolationLimitExceeded();
+      return;
+    }
+
+    // Log the event
+    logEvent(`VIOLATION: ${reason}`);
+
+    // Set cooldown and lock immediately
+    violationCooldownRef.current = true;
+    violationLockRef.current = true;
+
+    // Release cooldown after 5 seconds
+    setTimeout(() => {
+      violationCooldownRef.current = false;
+    }, 5000);
+
+    try {
+      console.log(`🚨 Violation triggered: ${reason} (Count: ${violationCountRef.current + 1}/${MAX_WARNINGS})`);
+
+      // STEP 1: Take and submit violation snapshot FIRST (with ?violate=true)
+      if (!snapshotInProgressRef.current) {
+        snapshotInProgressRef.current = true;
+        
+        try {
+          console.log("📸 Step 1: Taking violation snapshot...");
+          const imageFile = await captureFullScreenFrame();
+          
+          if (imageFile) {
+            await submitViolationSnapshot(submissionId, imageFile);
+            console.log("✅ Step 1: Violation snapshot submitted with ?violate=true");
+          }
+        } catch (snapshotError) {
+          console.error("Error taking violation snapshot:", snapshotError);
+        } finally {
+          snapshotInProgressRef.current = false;
+        }
+      }
+
+      // STEP 2: Submit violation API with answers
+      console.log("📤 Step 2: Submitting violation API with answers");
+      const formattedAnswers = formatAnswersForBackend();
+      
+      try {
+        await submitViolation(submissionId, formattedAnswers);
+        console.log("✅ Step 2: Violation API called successfully");
+      } catch (violationError) {
+        console.error("Error submitting violation:", violationError);
+      }
+
+      // STEP 3: Update warning count
+      const newWarningCount = violationCountRef.current + 1;
+      setWarnings(newWarningCount);
+      violationCountRef.current = newWarningCount;
+      console.log(`⚠️ Warning count updated: ${newWarningCount}/${MAX_WARNINGS}`);
+
+      // STEP 4: Check if exceeded limit and redirect
+      if (newWarningCount > MAX_WARNINGS) {
+        console.log("⚠️ Violation limit exceeded (3 violations), redirecting to dashboard");
+        handleViolationLimitExceeded();
+      }
+
+    } catch (error) {
+      console.error("Error in triggerViolation:", error);
+    } finally {
+      // Release lock after 3 seconds
+      setTimeout(() => {
+        violationLockRef.current = false;
+      }, 3000);
+    }
+  };
+
+  /* ---------- VIOLATION LIMIT EXCEEDED - REDIRECT TO DASHBOARD ---------- */
+  const handleViolationLimitExceeded = async () => {
+    if (submitted) return;
+    
+    console.log("🚫 Violation limit exceeded (3 violations), redirecting to dashboard");
+    setSubmitted(true);
+    
+    // Clear all intervals
+    if (checkpointTimerRef.current) {
+      clearInterval(checkpointTimerRef.current);
+      checkpointTimerRef.current = null;
+    }
+    
+    if (cameraCheckIntervalRef.current) {
+      clearInterval(cameraCheckIntervalRef.current);
+      cameraCheckIntervalRef.current = null;
+    }
+    
+    stopCamera();
+
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(track => track.stop());
+      screenStreamRef.current = null;
+    }
+    clearScreenStream();
+
+    snapshotsScheduledRef.current = false;
+    
+    // Submit final answers before redirecting
+    try {
+      const formattedAnswers = formatAnswersForBackend();
+      await submitExamAnswers(submissionId, formattedAnswers);
+      console.log("✅ Final answers submitted before redirect");
+    } catch (err) {
+      console.error("Error submitting final answers:", err);
+    }
+    
+    // Redirect to dashboard
+    navigate("/candidate-dashboard", {
+      replace: true,
+      state: {
+        examCompleted: true,
+        message: "Exam terminated - Too many violations (3 violations)",
+        autoSubmitted: true,
+        violationLimitExceeded: true
+      }
+    });
+  };
+
+  /* ---------- ENTER FULLSCREEN ---------- */
+  const enterFullscreen = async () => {
+    try {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        await elem.requestFullscreen();
+        setIsFullscreen(true);
+      }
+    } catch (e) {
+      console.error("Failed to enter fullscreen:", e);
+      alert("Failed to enter fullscreen mode. Please try again.");
+    }
+  };
+
  
   /* ---------- FULLSCREEN DETECTION ---------- */
   useEffect(() => {
@@ -432,10 +606,25 @@ function CandidateExamInterface() {
  
       if (fullscreenGraceRef.current) return;
  
+      // Only trigger on exit
       if (!isNowFullscreen && !submitted && !fullscreenRequired) {
         console.log("Fullscreen exit detected");
         setFullscreenRequired(true);
-        triggerViolation("Exited fullscreen mode");
+        // triggerViolation("Exited fullscreen mode");
+                
+        // Only trigger if not already triggered by another event
+        if (!violationTriggeredRef.current) {
+          violationTriggeredRef.current = true;
+          triggerViolation("Exited fullscreen mode");
+          
+          // Reset after 3 seconds
+          setTimeout(() => {
+            violationTriggeredRef.current = false;
+          }, 3000);
+        } else {
+          console.log("Skipping fullscreen violation - already triggered");
+        }
+
       } else if (isNowFullscreen && fullscreenRequired) {
         setFullscreenRequired(false);
       }
@@ -450,80 +639,129 @@ function CandidateExamInterface() {
     const onVisibilityChange = () => {
       const isVisible = !document.hidden;
       setIsTabVisible(isVisible);
- 
+
+      // Only trigger when tab becomes hidden
       if (!isVisible && !submitted && !fullscreenRequired) {
         console.log("Tab switch detected");
-        triggerViolation("Tab switch detected");
+        // triggerViolation("Tab switch detected");
+        
+        logEvent("Tab hidden");
+        // Only trigger if not already triggered by another event
+        if (!violationTriggeredRef.current) {
+          violationTriggeredRef.current = true;
+          triggerViolation("Tab switch detected");
+          
+          // Reset after 3 seconds
+          setTimeout(() => {
+            violationTriggeredRef.current = false;
+          }, 3000);
+        } else {
+          console.log("Skipping tab violation - already triggered");
+        }
+
       }
     };
  
-    const onBlur = () => {
-      if (!submitted && !fullscreenRequired) {
-        console.log("Window blur detected");
-        triggerViolation("Window focus lost");
-      }
-    };
+    // const onBlur = () => {
+    //   if (!submitted && !fullscreenRequired) {
+    //     console.log("Window blur detected");
+    //     triggerViolation("Window focus lost");
+    //   }
+    // };
  
     document.addEventListener("visibilitychange", onVisibilityChange);
-    window.addEventListener("blur", onBlur);
+    // window.addEventListener("blur", onBlur);
  
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      window.removeEventListener("blur", onBlur);
+      // window.removeEventListener("blur", onBlur);
     };
   }, [submitted, fullscreenRequired]);
  
   /* ---------- CAMERA SETUP AND MONITORING ---------- */
-  useEffect(() => {
-    initializeCamera();
+  // useEffect(() => {
+  //   initializeCamera();
  
-    return () => {
-      stopCamera();
-    };
-  }, []);
+  //   return () => {
+  //     stopCamera();
+  //   };
+  // }, []);
  
-  // Camera health check interval
-  useEffect(() => {
-    cameraCheckIntervalRef.current = setInterval(() => {
-      checkCameraHealth();
-    }, 30000); // Check every 30 seconds instead of 5
+  // // Camera health check interval
+  // useEffect(() => {
+  //   cameraCheckIntervalRef.current = setInterval(() => {
+  //     checkCameraHealth();
+  //   }, 30000); // Check every 30 seconds instead of 5
  
-    return () => {
-      if (cameraCheckIntervalRef.current) {
-        clearInterval(cameraCheckIntervalRef.current);
-      }
-    };
-  }, [checkCameraHealth]);
+  //   return () => {
+  //     if (cameraCheckIntervalRef.current) {
+  //       clearInterval(cameraCheckIntervalRef.current);
+  //     }
+  //   };
+  // }, [checkCameraHealth]);
  
-  // Re-attach video when stream changes
-  useEffect(() => {
-    if (cameraStream && videoRef.current) {
-      videoRef.current.srcObject = cameraStream;
-      videoRef.current.play().catch(err => {
-        console.error("Error playing video in effect:", err);
-      });
-    }
-  }, [cameraStream]);
+  // // Re-attach video when stream changes
+  // useEffect(() => {
+  //   if (cameraStream && videoRef.current) {
+  //     videoRef.current.srcObject = cameraStream;
+  //     videoRef.current.play().catch(err => {
+  //       console.error("Error playing video in effect:", err);
+  //     });
+  //   }
+  // }, [cameraStream]);
  
   /* ---------- PREVENT CONTEXT MENU AND SHORTCUTS ---------- */
   useEffect(() => {
     const preventDefault = (e) => {
       if (e.type === "contextmenu") {
         e.preventDefault();
-        triggerViolation("Right-click attempted");
+        // triggerViolation("Right-click attempted");
+        
+        logEvent("Right-click");
+        if (!violationTriggeredRef.current) {
+          violationTriggeredRef.current = true;
+          triggerViolation("Right-click attempted");
+          
+          setTimeout(() => {
+            violationTriggeredRef.current = false;
+          }, 3000);
+        }
+
       }
      
       if (e.type === "keydown") {
         // Prevent picture-in-picture (Chrome)
         if (e.key === "p" && (e.ctrlKey || e.metaKey)) {
           e.preventDefault();
-          triggerViolation("Picture-in-picture attempted");
+          // triggerViolation("Picture-in-picture attempted");
+          
+          logEvent("Ctrl+P");
+          if (!violationTriggeredRef.current) {
+            violationTriggeredRef.current = true;
+            triggerViolation("Picture-in-picture attempted");
+            
+            setTimeout(() => {
+              violationTriggeredRef.current = false;
+            }, 3000);
+          }
+
         }
        
         // Prevent F11 and Escape
         if (e.key === "F11" || (e.key === "Escape" && isFullscreen)) {
           e.preventDefault();
-          triggerViolation(`Attempted to use ${e.key} key`);
+          // triggerViolation(`Attempted to use ${e.key} key`);
+
+          logEvent(`Key: ${e.key}`);
+          if (!violationTriggeredRef.current) {
+            violationTriggeredRef.current = true;
+            triggerViolation(`Attempted to use ${e.key} key`);
+            
+            setTimeout(() => {
+              violationTriggeredRef.current = false;
+            }, 3000);
+          }
+
         }
        
         // Prevent browser shortcuts
@@ -533,9 +771,20 @@ function CandidateExamInterface() {
             case 't':
             case 'n':
             case 'tab':
-            case 'p': // Picture-in-picture
+            // case 'p': // Picture-in-picture
               e.preventDefault();
-              triggerViolation(`Attempted shortcut`);
+              // triggerViolation(`Attempted shortcut`);
+                            
+              logEvent(`Ctrl+${e.key}`);
+              if (!violationTriggeredRef.current) {
+                violationTriggeredRef.current = true;
+                triggerViolation(`Attempted shortcut: Ctrl+${e.key}`);
+                
+                setTimeout(() => {
+                  violationTriggeredRef.current = false;
+                }, 3000);
+              }
+
               break;
           }
         }
@@ -550,90 +799,124 @@ function CandidateExamInterface() {
       document.removeEventListener("keydown", preventDefault);
     };
   }, [isFullscreen, submitted]);
+
+  
+  /* ---------- CAMERA SETUP AND MONITORING ---------- */
+  useEffect(() => {
+    initializeCamera();
+
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
+  // Camera health check interval
+  useEffect(() => {
+    cameraCheckIntervalRef.current = setInterval(() => {
+      checkCameraHealth();
+    }, 30000);
+
+    return () => {
+      if (cameraCheckIntervalRef.current) {
+        clearInterval(cameraCheckIntervalRef.current);
+      }
+    };
+  }, [checkCameraHealth]);
+
+  // Re-attach video when stream changes
+  useEffect(() => {
+    if (cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+      videoRef.current.play().catch(err => {
+        console.error("Error playing video in effect:", err);
+      });
+    }
+  }, [cameraStream]);
+
  
   /* ---------- VIOLATION HANDLER ---------- */
-  const triggerViolation = async (reason) => {
-    if (violationCooldownRef.current || submitted || violationLockRef.current || fullscreenRequired) {
-      return;
-    }
+  // const triggerViolation = async (reason) => {
+  //   if (violationCooldownRef.current || submitted || violationLockRef.current || fullscreenRequired) {
+  //     return;
+  //   }
  
-    violationCooldownRef.current = true;
-    setTimeout(() => {
-      violationCooldownRef.current = false;
-    }, 3000);
+  //   violationCooldownRef.current = true;
+  //   setTimeout(() => {
+  //     violationCooldownRef.current = false;
+  //   }, 3000);
  
-    violationLockRef.current = true;
+  //   violationLockRef.current = true;
  
-    try {
+  //   try {
  
-      /* 📸 TAKE VIOLATION SCREENSHOT */
-      if (!snapshotInProgressRef.current) {
-        snapshotInProgressRef.current = true;
+  //     /* 📸 TAKE VIOLATION SCREENSHOT */
+  //     if (!snapshotInProgressRef.current) {
+  //       snapshotInProgressRef.current = true;
  
-        const imageFile = await captureFullScreenFrame();
+  //       const imageFile = await captureFullScreenFrame();
  
-        if (imageFile) {
-          await submitViolationSnapshot(submissionId, imageFile);
-          console.log("Violation screenshot submitted");
-        }
+  //       if (imageFile) {
+  //         await submitViolationSnapshot(submissionId, imageFile);
+  //         console.log("Violation screenshot submitted");
+  //       }
  
-        snapshotInProgressRef.current = false;
-      }
+  //       snapshotInProgressRef.current = false;
+  //     }
  
-      const formattedAnswers = formatAnswersForBackend();
+  //     const formattedAnswers = formatAnswersForBackend();
      
-      // Submit violation to backend
-      await submitViolation(submissionId, formattedAnswers);
+  //     // Submit violation to backend
+  //     await submitViolation(submissionId, formattedAnswers);
      
-      setWarnings(prev => {
-        const newCount = prev + 1;
+  //     setWarnings(prev => {
+  //       const newCount = prev + 1;
        
-        if (newCount > MAX_WARNINGS) {
-          handleViolationLimitExceeded();
-        }
+  //       if (newCount > MAX_WARNINGS) {
+  //         handleViolationLimitExceeded();
+  //       }
        
-        return newCount;
-      });
+  //       return newCount;
+  //     });
  
-    } catch (error) {
-      console.error("Error in triggerViolation:", error);
-    } finally {
-      violationLockRef.current = false;
-    }
-  };
+  //   } catch (error) {
+  //     console.error("Error in triggerViolation:", error);
+  //   } finally {
+  //     violationLockRef.current = false;
+  //   }
+  // };
  
   /* ---------- VIOLATION LIMIT EXCEEDED ---------- */
-  const handleViolationLimitExceeded = () => {
-    if (submitted) return;
+  // const handleViolationLimitExceeded = () => {
+  //   if (submitted) return;
    
-    setSubmitted(true);
+  //   setSubmitted(true);
    
-    // Clear all intervals
-    if (checkpointTimerRef.current) {
-      clearInterval(checkpointTimerRef.current);
-    }
-    if (cameraCheckIntervalRef.current) {
-      clearInterval(cameraCheckIntervalRef.current);
-    }
+  //   // Clear all intervals
+  //   if (checkpointTimerRef.current) {
+  //     clearInterval(checkpointTimerRef.current);
+  //   }
+  //   if (cameraCheckIntervalRef.current) {
+  //     clearInterval(cameraCheckIntervalRef.current);
+  //   }
    
-    stopCamera();
+  //   stopCamera();
  
-    if (screenStreamRef.current) {
-      screenStreamRef.current.getTracks().forEach(track => track.stop());
-    }
-    clearScreenStream();
+  //   if (screenStreamRef.current) {
+  //     screenStreamRef.current.getTracks().forEach(track => track.stop());
+  //   }
+  //   clearScreenStream();
  
-    snapshotsScheduledRef.current = false;
+  //   snapshotsScheduledRef.current = false;
    
-    navigate("/candidate-dashboard", {
-      replace: true,
-      state: {
-        examCompleted: true,
-        message: "Exam completed - You exceeded the violation limit",
-        autoSubmitted: true
-      }
-    });
-  };
+  //   navigate("/candidate-dashboard", {
+  //     replace: true,
+  //     state: {
+  //       examCompleted: true,
+  //       message: "Exam completed - You exceeded the violation limit",
+  //       autoSubmitted: true
+  //     }
+  //   });
+  // };
  
   /* ---------- RETURN TO FULLSCREEN ---------- */
   const handleReturnToFullscreen = async () => {
@@ -652,6 +935,7 @@ function CandidateExamInterface() {
   /* ---------- CHECKPOINT SAVE ---------- */
   useEffect(() => {
     const saveCheckpoint = async () => {
+      if (submitted) return;
       try {
         const formattedAnswers = formatAnswersForBackend();
         await api.post(`/api/exams/session/submissions/${submissionId}/checkpoint`, {
@@ -670,7 +954,7 @@ function CandidateExamInterface() {
         clearInterval(checkpointTimerRef.current);
       }
     };
-  }, [submissionId, timeLeft, formatAnswersForBackend]);
+  }, [submissionId, timeLeft, formatAnswersForBackend, submitted]);
  
   /* ---------- TIMER ---------- */
   useEffect(() => {
@@ -698,15 +982,18 @@ function CandidateExamInterface() {
       // Clear intervals
       if (checkpointTimerRef.current) {
         clearInterval(checkpointTimerRef.current);
+        checkpointTimerRef.current = null;
       }
       if (cameraCheckIntervalRef.current) {
         clearInterval(cameraCheckIntervalRef.current);
+        cameraCheckIntervalRef.current = null;
       }
      
       stopCamera();
  
       if (screenStreamRef.current) {
         screenStreamRef.current.getTracks().forEach(track => track.stop());
+        screenStreamRef.current = null;
       }
       clearScreenStream();
      
@@ -829,8 +1116,15 @@ function CandidateExamInterface() {
   const handleSubmit = async () => {
     if (submitted) return;
    
-    if (warnings > MAX_WARNINGS) {
-      alert("You cannot submit manually as you have exceeded the violation limit.");
+    // if (warnings > MAX_WARNINGS) {
+    //   alert("You cannot submit manually as you have exceeded the violation limit.");
+    //   handleViolationLimitExceeded();
+    //   return;
+    // }
+
+    // Check using ref for immediate value
+    if (violationCountRef.current >= MAX_WARNINGS) {
+      alert("You have exceeded the violation limit. Exam will be auto-submitted.");
       handleViolationLimitExceeded();
       return;
     }
@@ -848,15 +1142,18 @@ function CandidateExamInterface() {
       // Clear intervals
       if (checkpointTimerRef.current) {
         clearInterval(checkpointTimerRef.current);
+        checkpointTimerRef.current = null;
       }
       if (cameraCheckIntervalRef.current) {
         clearInterval(cameraCheckIntervalRef.current);
+        cameraCheckIntervalRef.current = null;
       }
      
       stopCamera();
  
       if (screenStreamRef.current) {
         screenStreamRef.current.getTracks().forEach(track => track.stop());
+        screenStreamRef.current = null;
       }
       clearScreenStream();
      
@@ -1046,6 +1343,11 @@ function CandidateExamInterface() {
               <span className="question-marks">Marks: {currentQuestion.marks}</span>
             )}
           </div>
+          {/* Violation indicator in header */}
+          <div className={`header-violation-badge ${warnings >= MAX_WARNINGS ? 'critical' : ''}`}>
+            ⚠️ {warnings}/{MAX_WARNINGS}
+          </div>
+
         </div>
        
         <div className="question-text">
@@ -1090,9 +1392,9 @@ function CandidateExamInterface() {
           <button
             className="submit-btn"
             onClick={handleSubmit}
-            disabled={warnings > MAX_WARNINGS}
+            disabled={warnings >= MAX_WARNINGS}
           >
-            {warnings > MAX_WARNINGS ? 'Violation Limit Exceeded' : 'Submit Exam'}
+            {warnings >= MAX_WARNINGS ? 'Violation Limit Exceeded' : 'Submit Exam'}
           </button>
         </div>
       </main>
@@ -1175,7 +1477,7 @@ function CandidateExamInterface() {
           </div>
           <p className="warning-note">
             {warnings >= MAX_WARNINGS
-              ? "⚠️ MAXIMUM WARNINGS - Next violation auto-submits!"
+              ? "⚠️ MAXIMUM WARNINGS - Exam will auto-submit on next violation!"
               : warnings > 0
               ? `⚠️ ${MAX_WARNINGS - warnings} warning(s) remaining`
               : "No violations yet"}
@@ -1194,6 +1496,36 @@ function CandidateExamInterface() {
           </div>
         </div>
       </div>
+      
+      {/* Add CSS for header violation badge */}
+      <style jsx>{`
+        .header-violation-badge {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: #fff3cd;
+          color: #856404;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: bold;
+          border: 1px solid #ffeeba;
+        }
+        
+        .header-violation-badge.critical {
+          background: #f8d7da;
+          color: #721c24;
+          border-color: #f5c6cb;
+          animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+          0% { opacity: 0.8; }
+          50% { opacity: 1; }
+          100% { opacity: 0.8; }
+        }
+      `}</style>
+
     </div>
   );
 }

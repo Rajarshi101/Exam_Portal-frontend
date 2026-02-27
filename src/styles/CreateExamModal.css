@@ -56,10 +56,21 @@
   color: #333;
 }
 
-.modal-body {
+/* .modal-body {
   padding: 24px;
   overflow-y: auto;
   flex: 1;
+} */
+
+.modal-container {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body {
+  overflow-y: auto;
+  max-height: 65vh;
 }
 
 .form-group {
