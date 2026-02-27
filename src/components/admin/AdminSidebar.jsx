@@ -1,10 +1,22 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../api/authApi";
 import "../../styles/AdminSidebar.css";
 
 function AdminSidebar({ setActiveTab }) {
 
+  const [collapsed, setCollapsed] = useState(false);
+
+  const [activeTab, setLocalActiveTab] = useState("allExams");
+
   const navigate = useNavigate();
+
+  const handleTabClick = (tabKey, index) => {
+    setLocalActiveTab(tabKey);
+    setActiveTab(tabKey);
+  };
+
+
 
   const handleLogout = () => {
     logout();
@@ -13,28 +25,56 @@ function AdminSidebar({ setActiveTab }) {
 
 
   return (
-    <div className="admin-sidebar">
-      <h2>Admin Panel</h2>
+    <div className={`admin-sidebar ${collapsed ? "collapsed" : ""}`}>
+      {/* HEADER */}
+      <div className="sidebar-header">
+        {!collapsed && <h2 className="sidebar-title">Admin Panel</h2>}
+        <button className="toggle-btn" onClick={() => setCollapsed(!collapsed)} >
+          <i className="fas fa-bars"></i>
+        </button>
+      </div>
 
-      <button onClick={() => setActiveTab("overview")}>
-        Dashboard Overview
+      <div className="sidebar-content">
+        {/* Sliding Highlight */}
+        <div className="nav-highlight"
+          style={{
+            transform:
+              activeTab === "overview"
+                ? "translateY(0px)"
+                : activeTab === "exams"
+                ? "translateY(60px)"
+                : activeTab === "allExams"
+                ? "translateY(120px)"
+                : activeTab === "inviteAdmin"
+                ? "translateY(180px)"
+                : "translateY(0px)",
+          }}
+        />
+      <button className="nav-item" onClick={() => handleTabClick("overview")}>
+        <i className="fas fa-chart-pie"></i>
+        {!collapsed && <span>Dashboard Overview</span>}
       </button>
 
-      <button onClick={() => setActiveTab("exams")}>
-        Create Exam
+      <button className="nav-item" onClick={() => handleTabClick("exams")}>
+        <i className="fas fa-file-alt"></i>
+        {!collapsed && <span>Create Exam</span>}
       </button>
 
-      <button onClick={() => setActiveTab("allExams")}>
-        All Exams
+      <button className="nav-item" onClick={() => handleTabClick("allExams")}>
+        <i className="fas fa-desktop"></i>
+        {!collapsed && <span>All Exams</span>}
       </button>
 
-      <button onClick={() => setActiveTab("inviteAdmin")}>
-        Invite Admin
+      <button className="nav-item" onClick={() => handleTabClick("inviteAdmin")}>
+        <i className="fas fa-user-plus"></i>
+        {!collapsed && <span>Invite Admin</span>}
       </button>
 
-      <button onClick={handleLogout} className="logout-btn">
-        Logout
+      <button onClick={handleLogout} className="nav-item logout-btn">
+        <i className="fas fa-power-off"></i>
+        {!collapsed && <span>Logout</span>}
       </button>
+      </div>
 
     </div>
   );
