@@ -1038,3 +1038,20 @@ td .btn-action {
     width: 100%;
   }
 }
+
+.qualify-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.qualify {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.not-qualify {
+  background-color: #f8d7da;
+  color: #721c24;
+}

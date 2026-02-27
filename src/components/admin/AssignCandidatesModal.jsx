@@ -55,54 +55,116 @@ function AssignCandidatesModal({ examId, examTitle, onClose }) {
     reader.readAsText(file);
   };
 
-  const handleInvite = async () => {
-    try {
-      setInviting(true);
+  // const handleInvite = async () => {
+  //   try {
+  //     setInviting(true);
       
-      // Check token
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Please login again. Token not found.");
+  //     // Check token
+  //     const token = localStorage.getItem("token");
+  //     if (!token) {
+  //       alert("Please login again. Token not found.");
+  //       return;
+  //     }
+      
+  //     if (inviteMethod === "individual") {
+  //       const validCandidates = candidates.filter(c => c.name.trim() && c.email.trim());
+  //       if (validCandidates.length === 0) {
+  //         alert("Please add at least one candidate with name and email");
+  //         return;
+  //       }
+        
+  //       await inviteMultipleCandidates(examId, validCandidates);
+  //     } else {
+  //       if (!bulkCSVFile) {
+  //         alert("Please upload a CSV file first.");
+  //         return;
+  //       }
+        
+  //       await uploadExamCandidatesCSV(examId, bulkCSVFile);
+  //     }
+
+  //     setInviteSuccess(true);
+  //     setTimeout(() => {
+  //       onClose();
+  //     }, 2000);
+      
+  //   } catch (error) {
+  //     console.error("Invitation error:", error);
+      
+  //     if (error.response?.status === 403) {
+  //       alert("Access denied (403). Please check your authentication.");
+  //     } else if (error.response?.status === 400) {
+  //       alert("Invalid data format. Please check the candidate details.");
+  //     } else {
+  //       alert(`Failed to invite candidates: ${error.message}`);
+  //     }
+  //   } finally {
+  //     setInviting(false);
+  //   }
+  // };
+
+  const handleInvite = async () => {
+  try {
+    setInviting(true);
+
+    if (inviteMethod === "individual") {
+      const validCandidates = candidates.filter(
+        c => c.name.trim() && c.email.trim()
+      );
+
+      if (validCandidates.length === 0) {
+        alert("Please add at least one candidate.");
         return;
       }
-      
-      if (inviteMethod === "individual") {
-        const validCandidates = candidates.filter(c => c.name.trim() && c.email.trim());
-        if (validCandidates.length === 0) {
-          alert("Please add at least one candidate with name and email");
-          return;
-        }
-        
-        await inviteMultipleCandidates(examId, validCandidates);
+
+      const res = await inviteMultipleCandidates(examId, validCandidates);
+
+      // ✅ show success message
+      if (res?.data?.message) {
+        alert(res.data.message);
       } else {
-        if (!bulkCSVFile) {
-          alert("Please upload a CSV file first.");
-          return;
-        }
-        
-        await uploadExamCandidatesCSV(examId, bulkCSVFile);
+        alert("Candidates invited successfully.");
       }
 
-      setInviteSuccess(true);
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-      
-    } catch (error) {
-      console.error("Invitation error:", error);
-      
-      if (error.response?.status === 403) {
-        alert("Access denied (403). Please check your authentication.");
-      } else if (error.response?.status === 400) {
-        alert("Invalid data format. Please check the candidate details.");
-      } else {
-        alert(`Failed to invite candidates: ${error.message}`);
+    } else {
+
+      if (!bulkCSVFile) {
+        alert("Please upload a CSV file first.");
+        return;
       }
-    } finally {
-      setInviting(false);
+
+      const res = await uploadExamCandidatesCSV(examId, bulkCSVFile);
+
+      // ✅ show backend response
+      if (res?.data?.message) {
+        alert(res.data.message);
+      } else if (typeof res.data === "string") {
+        alert(res.data);
+      } else {
+        alert("CSV uploaded successfully.");
+      }
     }
-  };
 
+    setInviteSuccess(true);
+    setTimeout(() => onClose(), 1500);
+
+  } catch (error) {
+
+    console.error(error);
+
+    // ✅ show backend error message
+    if (error.response?.data?.message) {
+      alert(error.response.data.message);
+    } else if (typeof error.response?.data === "string") {
+      alert(error.response.data);
+    } else {
+      alert("Upload failed.");
+    }
+
+  } finally {
+    setInviting(false);
+  }
+};
   return (
     <div className="modal-overlay">
       <div className="modal-container">

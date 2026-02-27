@@ -9,6 +9,11 @@ import SystemCheck from "./pages/candidate/SystemCheck";
 import CandidateExamInterface from "./pages/candidate/CandidateExamInterface";
 import FirstLoginChangePassword from "./pages/candidate/FirstLoginChangePassword";
 import InviteVerify from "./pages/candidate/InviteVerify";
+// App.js or router configuration
+
+
+// In your routes
+
 
 
 function App() {
@@ -21,6 +26,7 @@ function App() {
       <Route path="/exam/:id" element={<CandidateExamOverview />} />
       <Route path="/system-check/:id" element={<SystemCheck />} />
       <Route path="/exam-interface/:id" element={<CandidateExamInterface />} />
+     
        <Route
   path="/auth/first-login/change-password"
   element={<FirstLoginChangePassword />}
