@@ -1,6 +1,6 @@
 :root {
   --sidebar-width: 260px;
-  --sidebar-collapsed-width: 80px;
+  --sidebar-collapsed-width: 70px;
   --sidebar-dark-primary: #18283b;
   --sidebar-dark-secondary: #2c3e50;
   --sidebar-light-primary: #f5f6fa;
@@ -11,11 +11,12 @@
 .admin-sidebar {
   width: var(--sidebar-width);
   background: var(--sidebar-dark-primary);
-  height: 100vh;
+  /* height: 100vh; */
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease;
   color: var(--sidebar-light-primary);
+  position: relative;
 }
 
 .admin-sidebar.collapsed {
@@ -74,6 +75,7 @@
   color: var(--sidebar-light-secondary);
   cursor: pointer;
   transition: color 0.3s ease;
+  font-size: 15px;
 }
 
 .nav-item i {

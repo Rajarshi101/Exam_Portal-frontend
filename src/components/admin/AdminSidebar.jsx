@@ -50,22 +50,22 @@ function AdminSidebar({ setActiveTab }) {
                 : "translateY(0px)",
           }}
         />
-      <button className="nav-item" onClick={() => handleTabClick("overview")}>
+      <button className={`nav-item ${activeTab === "overview" ? "active" : ""}`} onClick={() => handleTabClick("overview")}>
         <i className="fas fa-chart-pie"></i>
         {!collapsed && <span>Dashboard Overview</span>}
       </button>
 
-      <button className="nav-item" onClick={() => handleTabClick("exams")}>
+      <button className={`nav-item ${activeTab === "exams" ? "active" : ""}`} onClick={() => handleTabClick("exams")}>
         <i className="fas fa-file-alt"></i>
         {!collapsed && <span>Create Exam</span>}
       </button>
 
-      <button className="nav-item" onClick={() => handleTabClick("allExams")}>
+      <button className={`nav-item ${activeTab === "allExams" ? "active" : ""}`} onClick={() => handleTabClick("allExams")}>
         <i className="fas fa-desktop"></i>
         {!collapsed && <span>All Exams</span>}
       </button>
 
-      <button className="nav-item" onClick={() => handleTabClick("inviteAdmin")}>
+      <button className={`nav-item ${activeTab === "inviteAdmin" ? "active" : ""}`} onClick={() => handleTabClick("inviteAdmin")}>
         <i className="fas fa-user-plus"></i>
         {!collapsed && <span>Invite Admin</span>}
       </button>

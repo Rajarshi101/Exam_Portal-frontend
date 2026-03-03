@@ -540,39 +540,41 @@ Please check:
               </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="duration">Duration (minutes) *</label>
-              <input
-                type="number"
-                id="duration"
-                name="duration"
-                value={examDetails.duration}
-                onChange={handleChange}
-                placeholder="e.g., 60"
-                min="1"
-                max="480"
-                required
-              />
-              <small className="hint">Exam duration must fit between start and end time</small>
-            </div>
-        
-            <div className="form-group">
-              <label htmlFor="cutoff">Cutoff (%) *</label>
-              <input
-                type="number"
-                id="cutoff"
-                name="cutoff"
-                value={examDetails.cutoff}
-                onChange={handleChange}
-                placeholder="e.g., 40"
-                min="0"
-                max="100"
-                step="0.01"
-                required
-              />
-              <small className="hint">
-                Candidate must score ≥ cutoff to qualify
-              </small>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="duration">Duration (minutes) *</label>
+                <input
+                  type="number"
+                  id="duration"
+                  name="duration"
+                  value={examDetails.duration}
+                  onChange={handleChange}
+                  placeholder="e.g., 60"
+                  min="1"
+                  max="480"
+                  required
+                />
+                <small className="hint">Exam duration must fit between start and end time</small>
+              </div>
+          
+              <div className="form-group">
+                <label htmlFor="cutoff">Cutoff (%) *</label>
+                <input
+                  type="number"
+                  id="cutoff"
+                  name="cutoff"
+                  value={examDetails.cutoff}
+                  onChange={handleChange}
+                  placeholder="e.g., 40"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  required
+                />
+                <small className="hint">
+                  Candidate must score ≥ cutoff to qualify
+                </small>
+              </div>
             </div>
 
           </div>
