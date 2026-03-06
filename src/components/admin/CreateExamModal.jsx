@@ -347,13 +347,6 @@ function CreateExamModal({ onClose }) {
     }
   };
 
-  const cutoff = parseFloat(examDetails.cutoff);
-
-  if (cutoff < 0 || cutoff > 100) {
-    alert("Cutoff must be between 0 and 100");
-    return;
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -395,6 +388,13 @@ function CreateExamModal({ onClose }) {
       return;
     }
 
+    const cutoff = parseFloat(examDetails.cutoff);
+
+    if (cutoff < 0 || cutoff > 100) {
+      alert("Cutoff must be between 0 and 100");
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -414,6 +414,7 @@ function CreateExamModal({ onClose }) {
         duration: duration,
         startDate: formatDateForAPI(examDetails.startDate), // Will be "2026-01-01T10:00:00"
         endDate: formatDateForAPI(examDetails.endDate),      // Will be "2026-01-01T11:00:00"
+        cutoff: cutoff,
       };
 
       console.log("📤 Creating exam with data:", examData);

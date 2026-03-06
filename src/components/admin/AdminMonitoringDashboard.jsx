@@ -211,7 +211,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                   </span>
                 </div>
                 <div className="question-text">{question.text}</div>
-                // In the options rendering section, update the option-item JSX:
+                {/* // In the options rendering section, update the option-item JSX: */}
                 <div className="options-grid">
                   {question.options &&
                     Object.entries(question.options).map(([key, value]) => {
@@ -288,11 +288,11 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                       <th>Status</th>
                       <th>Progress</th>
                       <th>Score</th>
+                      <th>Result</th>
                       <th>Violations</th>
                       <th>Time Taken</th>
                       <th>Started At</th>
                       <th>Submitted At</th>
-                      {/* <th>Snapshots</th> */}
                       <th>Actions</th>
                     </tr>
                   </thead>

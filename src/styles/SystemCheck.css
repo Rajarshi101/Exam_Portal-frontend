@@ -1,10 +1,10 @@
-.system-check {
+/* .system-check { */
   /* min-height: 100vh; */
-  background-color: #f5f7fa;
-  padding: 2rem;
-}
+  /* background-color: #f5f7fa; */
+  /* padding: 2rem; */
+/* } */
 
-.system-check h1 {
+/* .system-check h1 {
   margin-bottom: 1.5rem;
 }
 
@@ -47,10 +47,10 @@
 .error {
   color: red;
   margin-bottom: 1rem;
-}
+} */
 
 /* SystemCheck.css - Add these styles */
-.camera-preview {
+/* .camera-preview {
   margin-top: 20px;
   display: flex;
   justify-content: center;
@@ -128,4 +128,243 @@
 
 .rules-list li:last-child {
   border-bottom: none;
+} */
+
+/* Layout wrapper */
+.system-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Scrollable middle area */
+.system-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;
+  background: linear-gradient(135deg, #141e30, #243b55);
+}
+
+/* Remove background from system-check since it's now in content */
+.system-check {
+  min-height: 100%;
+  padding-bottom: 40px;
+}
+
+/* .system-check {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 100%;
+  background: linear-gradient(135deg, #141e30, #243b55);
+  padding: 40px 20px;
+  font-family: "Segoe UI", sans-serif;
+  color: #1f2937;
+} */
+
+/* Header */
+.system-header {
+  text-align: center;
+  margin-bottom: 40px;
+  color: white;
+}
+
+.system-header h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.system-header p {
+  opacity: 0.9;
+  font-size: 15px;
+}
+
+/* Three Cards Side by Side */
+.checks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  /* margin-bottom: 40px; */
+  align-items: stretch;
+}
+
+/* Card Layout */
+.check-card {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  /* margin-bottom: 25px; */
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.check-card:hover {
+  transform: translateY(-3px);
+}
+
+/* Section Titles */
+.check-card h3 {
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.final-consent-checkbox {
+  margin: 2rem;
+}
+
+.check-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Buttons */
+.check-item button {
+  padding: 12px 22px;
+  background: linear-gradient(135deg, #243b55, #141e30);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  font-weight: 500;
+}
+
+.check-item button:hover {
+  transform: scale(1.05);
+}
+
+.check-item button.granted {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+}
+
+/* Camera Preview */
+.check-card .camera-preview {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.camera-feed {
+  /* width: 320px; */
+  height: 220px;
+  border-radius: 20px;
+  background: #000;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  object-fit: cover;
+}
+
+/* Status Badges */
+.status-checks {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  /* margin-bottom: 20px; */
+}
+
+.status-checks span {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.check-pass {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.check-fail {
+  background: #ffebee;
+  color: #c62828;
+}
+
+
+/* Bottom Proceed Section */
+.proceed-section {
+  margin-top: 30px;
+  /* padding: 20px; */
+  /* background: white; */
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* Top Row Layout */
+.proceed-top-row {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Status badges left aligned */
+/* .status-checks {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+} */
+
+/* Button right aligned */
+.proceed-btn {
+  min-width: 160px;
+}
+
+/* Bottom Message */
+.proceed-message {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 15px;
+  color: white;
+}
+
+/* Proceed Button */
+.proceed-btn {
+  padding: 14px 30px;
+  border-radius: 30px;
+  border: none;
+  font-size: 16px;
+  background: linear-gradient(135deg, #ff512f, #dd2476);
+  color: white;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.proceed-btn:hover {
+  transform: scale(1.05);
+}
+
+.proceed-btn:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+/* Consent */
+.consent-checkbox {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: white;
+}
+
+.rules-list li {
+  padding: 8px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Error */
+.error-message {
+  background: #ffebee;
+  color: #b71c1c;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 20px;
 }

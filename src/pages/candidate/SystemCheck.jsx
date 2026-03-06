@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { startExamSession } from "../../api/candidateApi";
 import "../../styles/SystemCheck.css";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 
 function SystemCheck() {
   const { id } = useParams();
@@ -271,145 +273,203 @@ function SystemCheck() {
   }, []);
 
   return (
-    <div className="system-check">
-      <h1>System Check</h1>
-      <p className="instructions">
-        Please complete the following checks before starting your exam.
-      </p>
+    <div className="system-layout">
+      <Header />
+      <div className="system-content">
+      <div className="system-check">
+        {/* <h1>System Check</h1>
+        <p className="instructions">
+          Please complete the following checks before starting your exam.
+        </p> */}
 
-      {error && (
-        <div className="error-message">
-          <strong>Error:</strong> {error}
-          {error.includes("photo") && (
-            <button onClick={requestCamera} style={{ marginLeft: "10px" }}>
-              Retry Camera
-            </button>
-          )}
+        <div className="system-header">
+          <h1>🔒 Secure Exam Verification</h1>
+          <p>Complete all system checks to begin your monitored examination session.</p>
         </div>
-      )}
 
-      <div className="check-section">
-        <h3>1. Camera Permission {cameraReady && "✅"}</h3>
-        <div className="check-item">
-          <button
-            onClick={requestCamera}
-            className={cameraGranted ? "granted" : ""}
-          >
-            {cameraGranted ? "✅ Camera Granted" : "Grant Camera Permission"}
-          </button>
+        {error && (
+          <div className="error-message">
+            <strong>Error:</strong> {error}
+            {error.includes("photo") && (
+              <button onClick={requestCamera} style={{ marginLeft: "10px" }}>
+                Retry Camera
+              </button>
+            )}
+          </div>
+        )}
 
-          {cameraGranted && (
-            <div className="camera-preview">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                disablePictureInPicture
-                controlsList="nodownload nofullscreen noremoteplayback"
-                className="camera-feed"
-                style={{
-                  border: cameraReady
-                    ? "3px solid #4CAF50"
-                    : "3px solid #ff9800",
-                }}
-              />
-              <p className="preview-note">
-                {cameraReady
-                  ? "✅ Camera ready - Photo will be captured when starting exam"
-                  : "⏳ Camera loading... Please wait"}
+        <div className="checks-grid">
+          <div className="check-card">
+            <div className="check-item">
+              <h3>1. Camera Permission {cameraReady && "✅"}</h3>
+              <button
+                onClick={requestCamera}
+                className={cameraGranted ? "granted" : ""}
+              >
+                {cameraGranted ? "✅ Camera Granted" : "Grant Camera Permission"}
+              </button>
+
+              {/* {cameraGranted && (
+                <div className="camera-preview">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    disablePictureInPicture
+                    controlsList="nodownload nofullscreen noremoteplayback"
+                    className="camera-feed"
+                    style={{
+                      border: cameraReady
+                        ? "3px solid #4CAF50"
+                        : "3px solid #ff9800",
+                    }}
+                  />
+                  <p className="preview-note">
+                    {cameraReady
+                      ? "✅ Camera ready - Photo will be captured when starting exam"
+                      : "⏳ Camera loading... Please wait"}
+                  </p>
+                </div>
+              )} */}
+            </div>
+            <div className="check-item">
+              <h3>2. Screen Share Permission</h3>
+              <button
+                onClick={requestScreenShare}
+                className={screenGranted ? "granted" : ""}
+              >
+                {screenGranted
+                  ? "✅ Screen Share Granted"
+                  : "Grant Screen Share Permission"}
+              </button>
+              <p className="helper-text">
+                You'll be asked to share your entire screen or a specific window.
               </p>
             </div>
-          )}
+          </div>
+
+          <div className="check-card">
+            {/* <h3>2. Screen Share Permission</h3>
+            <div className="check-item">
+              <button
+                onClick={requestScreenShare}
+                className={screenGranted ? "granted" : ""}
+              >
+                {screenGranted
+                  ? "✅ Screen Share Granted"
+                  : "Grant Screen Share Permission"}
+              </button>
+              <p className="helper-text">
+                You'll be asked to share your entire screen or a specific window.
+              </p>
+            </div> */}
+            <h3>Camera Preview</h3>
+            {cameraGranted && (
+                <div className="camera-preview">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    disablePictureInPicture
+                    controlsList="nodownload nofullscreen noremoteplayback"
+                    className="camera-feed"
+                    style={{
+                      border: cameraReady
+                        ? "3px solid #4CAF50"
+                        : "3px solid #ff9800",
+                    }}
+                  />
+                  <p className="preview-note" style={{marginBottom: 0}}>
+                    {cameraReady
+                      ? "✅ Camera ready - Photo will be captured when starting exam"
+                      : "⏳ Camera loading... Please wait"}
+                  </p>
+                </div>
+              )}
+          </div>
+
+          <div className="check-card">
+            <h3>3. Exam Rules & Consent</h3>
+            <div className="rules-list">
+              <ul>
+                <li>✅ Camera must remain ON throughout the exam</li>
+                <li>✅ No switching tabs or applications</li>
+                <li>✅ No other person should be in the room</li>
+                <li>✅ No use of mobile phones or other devices</li>
+                <li>✅ Screen must be shared continuously</li>
+                <li>❌ More than 2 violations will auto-submit your exam</li>
+              </ul>
+            </div>
+          </div>
         </div>
+
+        <div className="final-consent-checkbox">
+            <div className="check-item">
+              <label className="consent-checkbox">
+                <input
+                  type="checkbox"
+                  checked={consentGiven}
+                  onChange={(e) => setConsentGiven(e.target.checked)}
+                />
+                <span>
+                  I have read and agree to all the exam rules listed above. I
+                  understand that violations may result in exam termination.
+                </span>
+              </label>
+            </div>
+          </div>
+
+        <div className="proceed-section">
+          <div className="proceed-top-row">
+            <div className="status-checks">
+              {/* <p> */}
+                <span className={cameraGranted ? "check-pass" : "check-fail"}>
+                  {cameraGranted ? "✅" : "❌"} Camera
+                </span>
+                <span className={screenGranted ? "check-pass" : "check-fail"}>
+                  {screenGranted ? "✅" : "❌"} Screen Share
+                </span>
+                <span className={consentGiven ? "check-pass" : "check-fail"}>
+                  {consentGiven ? "✅" : "❌"} Consent
+                </span>
+                <span className={cameraReady ? "check-pass" : "check-fail"}>
+                  {cameraReady ? "✅" : "❌"} Camera Ready
+                </span>
+              {/* </p> */}
+            </div>
+
+            <button
+              className="proceed-btn"
+              disabled={!canProceed || loading}
+              onClick={handleProceed}
+            >
+              {loading ? "Starting Exam..." : "Start Exam"}
+            </button>
+          </div>
+
+          <div className="proceed-message">
+            {canProceed && (
+              <p className="proceed-note">
+                Clicking "Start Exam" will capture a photo and begin your exam.
+              </p>
+            )}
+
+            {!canProceed && (
+              <p className="proceed-note">
+                Complete all checks above to enable the Start Exam button.
+              </p>
+            )}
+          </div>
+          
+        </div>
+
+        {/* Hidden canvas for capturing photos */}
+        <canvas ref={canvasRef} style={{ display: "none" }} />
       </div>
-
-      <div className="check-section">
-        <h3>2. Screen Share Permission</h3>
-        <div className="check-item">
-          <button
-            onClick={requestScreenShare}
-            className={screenGranted ? "granted" : ""}
-          >
-            {screenGranted
-              ? "✅ Screen Share Granted"
-              : "Grant Screen Share Permission"}
-          </button>
-          <p className="helper-text">
-            You'll be asked to share your entire screen or a specific window.
-          </p>
-        </div>
       </div>
-
-      <div className="check-section">
-        <h3>3. Exam Rules & Consent</h3>
-        <div className="rules-list">
-          <ul>
-            <li>✅ Camera must remain ON throughout the exam</li>
-            <li>✅ No switching tabs or applications</li>
-            <li>✅ No other person should be in the room</li>
-            <li>✅ No use of mobile phones or other devices</li>
-            <li>✅ Screen must be shared continuously</li>
-            <li>❌ More than 2 violations will auto-submit your exam</li>
-          </ul>
-        </div>
-
-        <div className="check-item">
-          <label className="consent-checkbox">
-            <input
-              type="checkbox"
-              checked={consentGiven}
-              onChange={(e) => setConsentGiven(e.target.checked)}
-            />
-            <span>
-              I have read and agree to all the exam rules listed above. I
-              understand that violations may result in exam termination.
-            </span>
-          </label>
-        </div>
-      </div>
-
-      <div className="proceed-section">
-        <div className="status-checks">
-          <p>
-            <span className={cameraGranted ? "check-pass" : "check-fail"}>
-              {cameraGranted ? "✅" : "❌"} Camera
-            </span>
-            <span className={screenGranted ? "check-pass" : "check-fail"}>
-              {screenGranted ? "✅" : "❌"} Screen Share
-            </span>
-            <span className={consentGiven ? "check-pass" : "check-fail"}>
-              {consentGiven ? "✅" : "❌"} Consent
-            </span>
-            <span className={cameraReady ? "check-pass" : "check-fail"}>
-              {cameraReady ? "✅" : "❌"} Camera Ready
-            </span>
-          </p>
-        </div>
-
-        <button
-          className="proceed-btn"
-          disabled={!canProceed || loading}
-          onClick={handleProceed}
-        >
-          {loading ? "Starting Exam..." : "Start Exam"}
-        </button>
-
-        {canProceed && (
-          <p className="proceed-note">
-            Clicking "Start Exam" will capture a photo and begin your exam.
-          </p>
-        )}
-
-        {!canProceed && (
-          <p className="proceed-note">
-            Complete all checks above to enable the Start Exam button.
-          </p>
-        )}
-      </div>
-
-      {/* Hidden canvas for capturing photos */}
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+      <Footer />
     </div>
   );
 }

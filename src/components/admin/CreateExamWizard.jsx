@@ -21,7 +21,8 @@ function CreateExamWizard() {
     description: "",
     startDateTime: "",
     endDateTime: "",
-    duration: ""
+    duration: "",
+    cutoff: "",
   });
 
   // STEP 2
@@ -49,6 +50,11 @@ function CreateExamWizard() {
     const end = new Date(examDetails.endDateTime);
     const durationMinutes = Number(examDetails.duration);
 
+    if (durationMinutes <= 0) {
+      alert("Duration must be greater than 0");
+      return;
+    }
+    
     if (start >= end) {
       alert("Start time must be before end time.");
       return;
@@ -67,6 +73,13 @@ function CreateExamWizard() {
       return;
     }
 
+    const cutoff = Number(examDetails.cutoff);
+
+    if (cutoff < 0 || cutoff > 100) {
+      alert("Cutoff must be between 0 and 100");
+      return;
+    }
+
     try {
       const adminId = localStorage.getItem("adminId") || 1;
 
@@ -76,6 +89,7 @@ function CreateExamWizard() {
         duration: durationMinutes,
         startDate: examDetails.startDateTime,
         endDate: examDetails.endDateTime,
+        cutoff: cutoff,
       });
 
       setCreatedExamId(res.data.id);
@@ -251,7 +265,8 @@ function CreateExamWizard() {
       description: "",
       startDateTime: "",
       endDateTime: "",
-      duration: ""
+      duration: "",
+      cutoff: "",
     });
     setQuestions([]);
     setQuestionsFile(null);
@@ -313,7 +328,7 @@ function CreateExamWizard() {
             />
           </div>
 
-          <div className="date-row">
+          <div className="form-row">
             <div className="form-group">
               <label>
                 Start Date & Time <span className="required">*</span>
@@ -345,20 +360,41 @@ function CreateExamWizard() {
             </div>
           </div>
 
-          <div className="form-group">
-            <label>
-              Duration (minutes) <span className="required">*</span>
-            </label>
-            <input
-              type="number"
-              name="duration"
-              placeholder="e.g., 60"
-              value={examDetails.duration}
-              onChange={handleDetailsChange}
-            />
-            <small className="error-text">
-              Exam duration must fit between start and end time
-            </small>
+          <div className="form-row">
+            <div className="form-group">
+              <label>
+                Duration (minutes) <span className="required">*</span>
+              </label>
+              <input
+                type="number"
+                name="duration"
+                placeholder="e.g., 60"
+                value={examDetails.duration}
+                onChange={handleDetailsChange}
+              />
+              <small className="error-text">
+                Exam duration must fit between start and end time
+              </small>
+            </div>
+
+            <div className="form-group">
+              <label>
+                Cutoff (%) <span className="required">*</span>
+              </label>
+              <input
+                type="number"
+                name="cutoff"
+                placeholder="e.g., 40"
+                value={examDetails.cutoff}
+                onChange={handleDetailsChange}
+                min="0"
+                max="100"
+                step="0.01"
+              />
+              <small className="helper-text">
+                Candidate must score ≥ cutoff to qualify
+              </small>
+            </div>
           </div>
 
           <div className="step-actions">

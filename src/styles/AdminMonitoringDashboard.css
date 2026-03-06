@@ -1,8 +1,8 @@
 /* styles/AdminMonitoringDashboard.css */
 
-.monitoring-dashboard {
+/* .monitoring-dashboard {
   padding: 20px;
-}
+} */
 
 /* Header styles */
 .exams-header, .monitoring-header {
@@ -153,8 +153,8 @@
 
 .submissions-table th {
   background-color: #f5f5f5;
-  padding: 12px 16px;
-  text-align: left;
+  padding: 12px 9px;
+  text-align: center;
   font-weight: 600;
   color: #333;
   border-bottom: 2px solid #ddd;
@@ -162,9 +162,10 @@
 }
 
 .submissions-table td {
-  padding: 12px 16px;
+  padding: 12px 9px;
   border-bottom: 1px solid #eee;
   vertical-align: middle;
+  text-align: center;
 }
 
 .submissions-table tr:hover {
@@ -196,7 +197,7 @@
 
 /* Progress Bar */
 .progress-bar {
-  width: 100px;
+  width: 60px;
   height: 20px;
   background-color: #f0f0f0;
   border-radius: 10px;
@@ -893,7 +894,7 @@
 
 /* Ensure table cells align properly */
 .submissions-table td {
-  padding: 12px 16px;
+  padding: 12px 9px;
   border-bottom: 1px solid #eee;
   vertical-align: middle;
 }
@@ -1044,6 +1045,7 @@ td .btn-action {
   border-radius: 6px;
   font-weight: 600;
   font-size: 12px;
+  display: block;
 }
 
 .qualify {
