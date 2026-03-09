@@ -452,7 +452,7 @@ function CandidateExamInterface() {
     }
 
     // Check if already at max violations
-    if (violationCountRef.current >= MAX_WARNINGS) {
+    if (violationCountRef.current > MAX_WARNINGS) {
       console.log("Already at max violations, redirecting to dashboard");
       handleViolationLimitExceeded();
       return;
@@ -662,19 +662,20 @@ function CandidateExamInterface() {
       }
     };
  
-    // const onBlur = () => {
-    //   if (!submitted && !fullscreenRequired) {
-    //     console.log("Window blur detected");
-    //     triggerViolation("Window focus lost");
-    //   }
-    // };
+    const onBlur = async () => {
+      if (!submitted && !fullscreenRequired) {
+        console.log("Window/application switch detected");
+        await new Promise(resolve => setTimeout(resolve, 700));
+        triggerViolation("Window focus lost");
+      }
+    };
  
     document.addEventListener("visibilitychange", onVisibilityChange);
-    // window.addEventListener("blur", onBlur);
+    window.addEventListener("blur", onBlur);
  
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      // window.removeEventListener("blur", onBlur);
+      window.removeEventListener("blur", onBlur);
     };
   }, [submitted, fullscreenRequired]);
  
@@ -717,15 +718,15 @@ function CandidateExamInterface() {
         e.preventDefault();
         // triggerViolation("Right-click attempted");
         
-        logEvent("Right-click");
-        if (!violationTriggeredRef.current) {
-          violationTriggeredRef.current = true;
-          triggerViolation("Right-click attempted");
+        // logEvent("Right-click");
+        // if (!violationTriggeredRef.current) {
+        //   violationTriggeredRef.current = true;
+        //   triggerViolation("Right-click attempted");
           
-          setTimeout(() => {
-            violationTriggeredRef.current = false;
-          }, 3000);
-        }
+        //   setTimeout(() => {
+        //     violationTriggeredRef.current = false;
+        //   }, 3000);
+        // }
 
       }
      
@@ -1123,7 +1124,7 @@ function CandidateExamInterface() {
     // }
 
     // Check using ref for immediate value
-    if (violationCountRef.current >= MAX_WARNINGS) {
+    if (violationCountRef.current > MAX_WARNINGS) {
       alert("You have exceeded the violation limit. Exam will be auto-submitted.");
       handleViolationLimitExceeded();
       return;
@@ -1344,9 +1345,9 @@ function CandidateExamInterface() {
             )}
           </div>
           {/* Violation indicator in header */}
-          <div className={`header-violation-badge ${warnings >= MAX_WARNINGS ? 'critical' : ''}`}>
+          {/* <div className={`header-violation-badge ${warnings >= MAX_WARNINGS ? 'critical' : ''}`}>
             ⚠️ {warnings}/{MAX_WARNINGS}
-          </div>
+          </div> */}
 
         </div>
        
@@ -1392,9 +1393,9 @@ function CandidateExamInterface() {
           <button
             className="submit-btn"
             onClick={handleSubmit}
-            disabled={warnings >= MAX_WARNINGS}
+            disabled={warnings > MAX_WARNINGS}
           >
-            {warnings >= MAX_WARNINGS ? 'Violation Limit Exceeded' : 'Submit Exam'}
+            {warnings > MAX_WARNINGS ? 'Violation Limit Exceeded' : 'Submit Exam'}
           </button>
         </div>
       </main>

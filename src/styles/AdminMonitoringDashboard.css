@@ -237,9 +237,21 @@
   background-color: #f5f5f5;
 }
 
-.violations.has-violations {
+/* .violations.has-violations {
   background-color: #ffebee;
   color: #f44336;
+} */
+
+/* 1 or 2 violations */
+.violations.medium {
+  background-color: #ff99007f;
+  /* color: white; */
+}
+
+/* 3 violations */
+.violations.high {
+  background-color: #f4433687;
+  /* color: white; */
 }
 
 /* Snapshots */
