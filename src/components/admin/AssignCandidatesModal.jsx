@@ -1,5 +1,7 @@
-import { useState } from "react";
+// src/components/admin/AssignCandidatesModal.jsx
+import { useState, useEffect } from "react";
 import { inviteMultipleCandidates, uploadExamCandidatesCSV } from "../../api/examApi";
+import { batchApi, studentApi } from "../../api/batchManagementApi";
 import "../../styles/Modal.css";
 
 function AssignCandidatesModal({ examId, examTitle, onClose }) {
@@ -9,6 +11,90 @@ function AssignCandidatesModal({ examId, examTitle, onClose }) {
   const [bulkCSVFile, setBulkCSVFile] = useState(null);
   const [inviting, setInviting] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState(false);
+
+  // Batch related states
+  const [batches, setBatches] = useState([]);
+  const [selectedBatch, setSelectedBatch] = useState(null);
+  const [batchSearchTerm, setBatchSearchTerm] = useState("");
+  const [showBatchDropdown, setShowBatchDropdown] = useState(false);
+  const [batchStudents, setBatchStudents] = useState([]);
+  const [loadingBatches, setLoadingBatches] = useState(false);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [selectedBatchCandidates, setSelectedBatchCandidates] = useState([]);
+
+  // Fetch all batches on component mount
+  useEffect(() => {
+    fetchBatches();
+  }, []);
+
+  const fetchBatches = async () => {
+    try {
+      setLoadingBatches(true);
+      const data = await batchApi.getAllBatches();
+      setBatches(data);
+    } catch (err) {
+      console.error("Error fetching batches:", err);
+    } finally {
+      setLoadingBatches(false);
+    }
+  };
+
+  const fetchBatchStudents = async (batchId) => {
+    try {
+      setLoadingStudents(true);
+      const data = await studentApi.getStudentsByBatch(batchId);
+      setBatchStudents(data);
+      
+      // Format students for display
+      const formattedStudents = data.map(student => ({
+        name: student.name,
+        email: student.email,
+        selected: false
+      }));
+      setSelectedBatchCandidates(formattedStudents);
+    } catch (err) {
+      console.error("Error fetching batch students:", err);
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
+
+  const handleBatchSelect = (batch) => {
+    setSelectedBatch(batch);
+    setBatchSearchTerm(batch.name);
+    setShowBatchDropdown(false);
+    fetchBatchStudents(batch.id);
+  };
+
+  const filteredBatches = batches.filter(batch =>
+    batch.name.toLowerCase().includes(batchSearchTerm.toLowerCase())
+  );
+
+  const toggleStudentSelection = (index) => {
+    const updated = [...selectedBatchCandidates];
+    updated[index].selected = !updated[index].selected;
+    setSelectedBatchCandidates(updated);
+  };
+
+  const selectAllStudents = () => {
+    const updated = selectedBatchCandidates.map(student => ({
+      ...student,
+      selected: true
+    }));
+    setSelectedBatchCandidates(updated);
+  };
+
+  const deselectAllStudents = () => {
+    const updated = selectedBatchCandidates.map(student => ({
+      ...student,
+      selected: false
+    }));
+    setSelectedBatchCandidates(updated);
+  };
+
+  const getSelectedStudentsCount = () => {
+    return selectedBatchCandidates.filter(s => s.selected).length;
+  };
 
   const addCandidateField = () => {
     setCandidates([...candidates, { name: "", email: "" }]);
@@ -66,22 +152,39 @@ function AssignCandidatesModal({ examId, examTitle, onClose }) {
         return;
       }
       
+      let validCandidates = [];
+      
       if (inviteMethod === "individual") {
-        const validCandidates = candidates.filter(c => c.name.trim() && c.email.trim());
+        validCandidates = candidates.filter(c => c.name.trim() && c.email.trim());
         if (validCandidates.length === 0) {
           alert("Please add at least one candidate with name and email");
           return;
         }
-        
-        await inviteMultipleCandidates(examId, validCandidates);
-      } else {
+      } else if (inviteMethod === "bulk") {
         if (!bulkCSVFile) {
           alert("Please upload a CSV file first.");
           return;
         }
         
         await uploadExamCandidatesCSV(examId, bulkCSVFile);
+        setInviteSuccess(true);
+        setTimeout(() => {
+          onClose();
+        }, 2000);
+        return;
+      } else if (inviteMethod === "batch") {
+        validCandidates = selectedBatchCandidates
+          .filter(s => s.selected)
+          .map(({ name, email }) => ({ name, email }));
+        
+        if (validCandidates.length === 0) {
+          alert("Please select at least one student from the batch");
+          return;
+        }
       }
+
+      // For individual and batch methods, use the multiple invite API
+      await inviteMultipleCandidates(examId, validCandidates);
 
       setInviteSuccess(true);
       setTimeout(() => {
@@ -133,6 +236,17 @@ function AssignCandidatesModal({ examId, examTitle, onClose }) {
                 onChange={() => setInviteMethod("bulk")}
               />
               Bulk CSV Upload
+            </label>
+
+            <label className="radio-option">
+              <input
+                type="radio"
+                name="inviteMethod"
+                value="batch"
+                checked={inviteMethod === "batch"}
+                onChange={() => setInviteMethod("batch")}
+              />
+              Assign by Batch
             </label>
           </div>
 
@@ -235,6 +349,115 @@ function AssignCandidatesModal({ examId, examTitle, onClose }) {
               )}
             </div>
           )}
+
+          {inviteMethod === "batch" && (
+            <div className="invite-section batch-section">
+              <label>Select Batch</label>
+              
+              {/* Batch Search Dropdown */}
+              <div className="batch-search-container">
+                <div className="search-input-wrapper">
+                  <input
+                    type="text"
+                    placeholder="Search for a batch..."
+                    value={batchSearchTerm}
+                    onChange={(e) => {
+                      setBatchSearchTerm(e.target.value);
+                      setShowBatchDropdown(true);
+                      setSelectedBatch(null);
+                    }}
+                    onFocus={() => setShowBatchDropdown(true)}
+                    className="batch-search-input"
+                  />
+                  {loadingBatches && <span className="search-spinner">⏳</span>}
+                </div>
+
+                {showBatchDropdown && batchSearchTerm && (
+                  <div className="batch-dropdown">
+                    {filteredBatches.length > 0 ? (
+                      filteredBatches.map(batch => (
+                        <div
+                          key={batch.id}
+                          className="batch-option"
+                          onClick={() => handleBatchSelect(batch)}
+                        >
+                          <strong>{batch.name}</strong>
+                          <small>{batch.description}</small>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="no-batches">No batches found</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Batch Info */}
+              {selectedBatch && (
+                <div className="selected-batch-info">
+                  <h4>Selected Batch: {selectedBatch.name}</h4>
+                  <p className="batch-description">{selectedBatch.description}</p>
+                </div>
+              )}
+
+              {/* Students List */}
+              {selectedBatch && (
+                <div className="batch-students-section">
+                  <div className="students-header">
+                    <h4>Students in this batch</h4>
+                    <div className="student-selection-actions">
+                      <button 
+                        className="small-btn"
+                        onClick={selectAllStudents}
+                        disabled={loadingStudents}
+                      >
+                        Select All
+                      </button>
+                      <button 
+                        className="small-btn"
+                        onClick={deselectAllStudents}
+                        disabled={loadingStudents}
+                      >
+                        Deselect All
+                      </button>
+                    </div>
+                  </div>
+
+                  {loadingStudents ? (
+                    <div className="loading-students">Loading students...</div>
+                  ) : (
+                    <>
+                      <div className="students-count">
+                        {getSelectedStudentsCount()} of {selectedBatchCandidates.length} students selected
+                      </div>
+
+                      <div className="students-list-container">
+                        {selectedBatchCandidates.length > 0 ? (
+                          selectedBatchCandidates.map((student, index) => (
+                            <div key={index} className="student-item">
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={student.selected}
+                                  onChange={() => toggleStudentSelection(index)}
+                                />
+                                <div className="student-info">
+                                  <span className="student-name">{student.name}</span>
+                                  <span className="student-email">{student.email}</span>
+                                </div>
+                              </label>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="no-students">No students found in this batch</p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="modal-footer">
@@ -248,7 +471,10 @@ function AssignCandidatesModal({ examId, examTitle, onClose }) {
           <button 
             className="btn-invite" 
             onClick={handleInvite}
-            disabled={inviting}
+            disabled={
+              inviting || 
+              (inviteMethod === "batch" && getSelectedStudentsCount() === 0)
+            }
           >
             {inviting ? "Inviting..." : inviteSuccess ? "✓ Invited!" : "Send Invitations"}
           </button>

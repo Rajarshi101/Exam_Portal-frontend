@@ -8,6 +8,7 @@ import InviteAdmin from "../../components/admin/InviteAdmin";
 import AdminMonitoringDashboard from "../../components/admin/AdminMonitoringDashboard";
 import ExamTable from "../../components/admin/ExamTable";
 import CreateExamWizard from "../../components/admin/CreateExamWizard";
+import BatchManagement from "../../components/admin/BatchManagement";
 
 import "../../styles/AdminDashboard.css";
 
@@ -61,75 +62,73 @@ function AdminDashboard() {
   return (
     <div className="page-container">
       <Header />
-    <div className="page-content admin-dashboard">
-      <AdminSidebar setActiveTab={setActiveTab} activeTab={activeTab} />
+      <div className="page-content admin-dashboard">
+        <AdminSidebar setActiveTab={setActiveTab} activeTab={activeTab} />
 
-      <div className="admin-main">
-        {/* 🔝 Top Bar */}
-        {/* <div className="admin-topbar">
+        <div className="admin-main">
+          {/* 🔝 Top Bar */}
+          {/* <div className="admin-topbar">
           <button className="logout-btn" onClick={handleLogout}>
             Logout
           </button>
         </div> */}
 
-        {/* 📄 Content */}
-        <div className="admin-content">
-          {activeTab === "overview" && (
-            <>
-              <h1>Dashboard Overview</h1>
-              <p>Welcome to the Admin Dashboard.</p>
-            </>
-          )}
+          {/* 📄 Content */}
+          <div className="admin-content">
+            {activeTab === "overview" && (
+              <>
+                <h1>Dashboard Overview</h1>
+                <p>Welcome to the Admin Dashboard.</p>
+              </>
+            )}
 
+            {activeTab === "exams" && (
+              <>
+                <h1>Create New Exam</h1>
+                <CreateExamWizard />
+              </>
+            )}
 
-          {activeTab === "exams" && (
-          <>
-            <h1>Create New Exam</h1>
-            <CreateExamWizard />
-          </>
-        )}
- 
+            {activeTab === "allExams" && (
+              <>
+                <div className="exams-header">
+                  <h1>All Exams</h1>
+                  <button
+                    className="btn-create-exam"
+                    onClick={() => setShowCreateExamModal(true)}
+                  >
+                    + Create New Exam
+                  </button>
+                </div>
+                <ExamTable onMonitorExam={handleMonitorExam} />
+              </>
+            )}
 
-          
-
-          {activeTab === "allExams" && (
-            <>
-              <div className="exams-header">
-                <h1>All Exams</h1>
-                <button 
-                  className="btn-create-exam" 
-                  onClick={() => setShowCreateExamModal(true)}
-                >
-                  + Create New Exam
-                </button>
-              </div>
-              <ExamTable 
-                onMonitorExam={handleMonitorExam}
+            {activeTab === "monitorExam" && selectedExamId && (
+              <AdminMonitoringDashboard
+                examId={selectedExamId}
+                onBack={handleBackFromMonitoring}
               />
-            </>
-          )}
+            )}
 
-          {activeTab === "monitorExam" && selectedExamId && (
-            <AdminMonitoringDashboard
-              examId={selectedExamId}
-              onBack={handleBackFromMonitoring}
-            />
-          )}
+            {activeTab === "batches" && <BatchManagement />}
 
-          {activeTab === "inviteAdmin" && (
-            <>
-              <h1>Invite Admin</h1>
-              <InviteAdmin />
-            </>
-          )}
+        {/* Create Exam Modal */}
+        {showCreateExamModal && (
+          <CreateExamModal onClose={() => setShowCreateExamModal(false)} />
+        )}
+
+            {activeTab === "inviteAdmin" && (
+              <>
+                <h1>Invite Admin</h1>
+                <InviteAdmin />
+              </>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Create Exam Modal */}
-      {showCreateExamModal && (
-        <CreateExamModal onClose={() => setShowCreateExamModal(false)} />
-      )}
-    </div>
+        
+      </div>
       <Footer />
     </div>
   );
