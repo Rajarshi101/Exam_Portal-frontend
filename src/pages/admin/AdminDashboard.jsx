@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 
 import AdminSidebar from "../../components/admin/AdminSidebar";
+import AdminOverview from "../../components/admin/AdminOverview";
 import CreateExamModal from "../../components/admin/CreateExamModal";
 import InviteAdmin from "../../components/admin/InviteAdmin";
 import AdminMonitoringDashboard from "../../components/admin/AdminMonitoringDashboard";
@@ -77,7 +78,7 @@ function AdminDashboard() {
           {activeTab === "overview" && (
             <>
               <h1>Dashboard Overview</h1>
-              <p>Welcome to the Admin Dashboard.</p>
+              <AdminOverview />
             </>
           )}
 
