@@ -998,4 +998,1068 @@
   font-size: 12px;
 }
 
+
+
+/* Add to BatchManagement.css */
+
+/* Actions Column */
+.actions-column {
+  width: 80px;
+  text-align: center;
+}
+
+.actions-cell {
+  text-align: center;
+}
+
+/* Delete Button */
+.btn-delete-student {
+  background: transparent;
+  border: 1px solid #ff4757;
+  color: #ff4757;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.btn-delete-student:hover {
+  background: #ff4757;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3);
+}
+
+.btn-delete-student i {
+  font-size: 16px;
+}
+
+/* Update students table to accommodate actions column */
+.students-table th,
+.students-table td {
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.students-table th.actions-column,
+.students-table td.actions-cell {
+  text-align: center;
+}
+
+/* Responsive design for students table */
+@media (max-width: 768px) {
+  .students-table {
+    font-size: 13px;
+  }
+  
+  .students-table th,
+  .students-table td {
+    padding: 8px 10px;
+  }
+  
+  .btn-delete-student {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .btn-delete-student i {
+    font-size: 14px;
+  }
+}
+
+/* Optional: Add a tooltip for delete button */
+.btn-delete-student[title] {
+  position: relative;
+}
+
+.btn-delete-student[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  margin-bottom: 5px;
+  z-index: 10;
+}
+
+/* Loading state for delete operation */
+.students-list.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Success animation for delete */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+.student-row-deleting {
+  animation: fadeOut 0.3s ease forwards;
+}
+
 /* Keep all your existing modal styles */
+/* Add to BatchManagement.css */
+
+/* Search and Filter Section */
+.search-filter-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.search-filter-section.modal-search {
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eef2f6;
+  margin-bottom: 0;
+}
+
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-box .search-input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.search-box .search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-box .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 16px;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.clear-filters-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid #ff4757;
+  color: #ff4757;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clear-filters-btn:hover {
+  background: #ff4757;
+  color: white;
+}
+
+/* Results Count */
+.results-count {
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.results-count.modal-results-count {
+  padding: 10px 20px;
+  margin-bottom: 0;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.active-filters {
+  color: #ff4757;
+  font-weight: 400;
+  margin-left: 5px;
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.no-results i {
+  font-size: 48px;
+  color: #e0e0e0;
+  margin-bottom: 15px;
+}
+
+.no-results p {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.no-results .hint {
+  font-size: 14px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Loading State */
+.loading {
+  text-align: center;
+  padding: 60px;
+  color: #667eea;
+  font-size: 16px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+
+.pagination.modal-pagination {
+  padding: 15px 20px;
+  border-top: 1px solid #eef2f6;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  color: #333;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.page-number {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  color: #333;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-number:hover {
+  background: #f0f0f0;
+}
+
+.page-number.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.ellipsis {
+  color: #999;
+  margin: 0 5px;
+}
+
+.page-info {
+  margin-left: 10px;
+  color: #999;
+  font-size: 13px;
+}
+
+/* No Batches */
+.no-batches {
+  text-align: center;
+  padding: 60px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.no-batches p {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.no-batches .hint {
+  color: #999;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .search-filter-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-controls {
+    justify-content: flex-end;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .page-numbers {
+    order: -1;
+  }
+  
+  .page-info {
+    margin-left: 0;
+  }
+}
+
+/* Add to BatchManagement.css */
+
+/* Search Section - Fixed Layout */
+.search-section {
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.search-wrapper {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-wrapper .search-box {
+  flex: 1;
+  position: relative;
+}
+
+.search-wrapper .search-input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.search-wrapper .search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-wrapper .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 16px;
+}
+
+.clear-search-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid #ff4757;
+  color: #ff4757;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.clear-search-btn:hover {
+  background: #ff4757;
+  color: white;
+}
+
+/* Results Count */
+.results-count {
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #667eea;
+  font-weight: 500;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.active-filters {
+  color: #ff4757;
+  font-weight: 400;
+  margin-left: 5px;
+}
+
+/* No Results State */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.no-results i {
+  font-size: 48px;
+  color: #e0e0e0;
+  margin-bottom: 15px;
+}
+
+.no-results p {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+.no-results .hint {
+  font-size: 14px;
+  color: #999;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
+.no-results .clear-search-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.no-results .clear-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  text-align: center;
+  padding: 60px;
+  color: #667eea;
+  font-size: 16px;
+}
+
+/* Students List */
+.students-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Students Table */
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.students-table th {
+  text-align: left;
+  padding: 12px 15px;
+  background: #f8f9fa;
+  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+  border-bottom: 2px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  background: #f8f9fa;
+  z-index: 1;
+}
+
+.students-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #dee2e6;
+  color: #666;
+  font-size: 14px;
+}
+
+.students-table tbody tr:hover {
+  background: #f8faff;
+}
+
+.students-table .actions-column {
+  width: 80px;
+  text-align: center;
+}
+
+.students-table .actions-cell {
+  text-align: center;
+}
+
+/* Delete Button */
+.btn-delete-student {
+  background: transparent;
+  border: 1px solid #ff4757;
+  color: #ff4757;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.btn-delete-student:hover {
+  background: #ff4757;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #eef2f6;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  color: #333;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.page-number {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  color: #333;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-number:hover {
+  background: #f0f0f0;
+}
+
+.page-number.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.ellipsis {
+  color: #999;
+  margin: 0 5px;
+}
+
+.page-info {
+  margin-left: 10px;
+  color: #999;
+  font-size: 13px;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #eee;
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background: #f5f5f5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .search-wrapper {
+    flex-direction: column;
+  }
+  
+  .clear-search-btn {
+    width: 100%;
+  }
+  
+  .pagination {
+    flex-direction: column;
+  }
+  
+  .page-numbers {
+    order: -1;
+  }
+  
+  .students-table {
+    font-size: 13px;
+  }
+  
+  .students-table th,
+  .students-table td {
+    padding: 8px 10px;
+  }
+  
+  .btn-delete-student {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+
+/* Add to BatchManagement.css */
+
+/* Clean Search Bar - No Button */
+.search-bar-container {
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.student-search-input {
+  width: 100%;
+  padding: 12px 40px 12px 45px;
+  border: 2px solid #e0e0e0;
+  border-radius: 30px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.student-search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.student-search-input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.search-input-wrapper .search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.clear-search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.clear-search-icon:hover {
+  background: #f0f0f0;
+  color: #ff4757;
+}
+
+/* Results Count */
+.results-count {
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #667eea;
+  font-weight: 500;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.active-filters {
+  color: #ff4757;
+  font-weight: 400;
+  margin-left: 5px;
+}
+
+/* No Results State */
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.no-results i {
+  font-size: 48px;
+  color: #e0e0e0;
+  margin-bottom: 15px;
+}
+
+.no-results p {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+.no-results .hint {
+  font-size: 14px;
+  color: #999;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
+.no-results .clear-search-btn {
+  display: inline-block;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.no-results .clear-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  text-align: center;
+  padding: 60px;
+  color: #667eea;
+  font-size: 16px;
+}
+
+/* Students List */
+.students-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Students Table */
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.students-table th {
+  text-align: left;
+  padding: 12px 15px;
+  background: #f8f9fa;
+  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+  border-bottom: 2px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.students-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #dee2e6;
+  color: #666;
+  font-size: 14px;
+}
+
+.students-table tbody tr:hover {
+  background: #f8faff;
+}
+
+.students-table .actions-column {
+  width: 80px;
+  text-align: center;
+}
+
+.students-table .actions-cell {
+  text-align: center;
+}
+
+/* Delete Button */
+.btn-delete-student {
+  background: transparent;
+  border: 1px solid #ff4757;
+  color: #ff4757;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.btn-delete-student:hover {
+  background: #ff4757;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #eef2f6;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  color: #333;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.page-number {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  color: #333;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-number:hover {
+  background: #f0f0f0;
+}
+
+.page-number.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.ellipsis {
+  color: #999;
+  margin: 0 5px;
+}
+
+.page-info {
+  margin-left: 10px;
+  color: #999;
+  font-size: 13px;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #eee;
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background: #f5f5f5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .student-search-input {
+    padding: 10px 35px 10px 40px;
+    font-size: 13px;
+  }
+  
+  .pagination {
+    flex-direction: column;
+  }
+  
+  .page-numbers {
+    order: -1;
+  }
+  
+  .students-table {
+    font-size: 13px;
+  }
+  
+  .students-table th,
+  .students-table td {
+    padding: 8px 10px;
+  }
+  
+  .btn-delete-student {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+
+/* Add to BatchManagement.css */
+
+.search-hint {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #667eea;
+  font-style: italic;
+  padding-left: 5px;
+}
+
+.search-hint span {
+  display: inline-block;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.fa-spinner {
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

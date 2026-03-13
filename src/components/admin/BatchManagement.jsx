@@ -1006,11 +1006,7 @@
 
 
 
-
-
-
-// src/components/admin/BatchManagement.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Papa from "papaparse";
 import batchManagementApi from "../../api/batchManagementApi";
 import "../../styles/BatchManagement.css";
@@ -1024,7 +1020,21 @@ function BatchManagement() {
   const [students, setStudents] = useState([]);
   const [showStudentsModal, setShowStudentsModal] = useState(false);
   const [studentsLoading, setStudentsLoading] = useState(false);
-  const [batchStudentCounts, setBatchStudentCounts] = useState({});
+  const [batchStudentCounts, setBatchStudentCounts] = useState({}); // Store counts per batch
+  
+  // Batch pagination and search states
+  const [batchCurrentPage, setBatchCurrentPage] = useState(0);
+  const [batchTotalPages, setBatchTotalPages] = useState(0);
+  const [batchTotalBatches, setBatchTotalBatches] = useState(0);
+  const [batchSearchTerm, setBatchSearchTerm] = useState("");
+  const [debouncedBatchSearch, setDebouncedBatchSearch] = useState("");
+
+  // Student pagination and search states
+  const [studentCurrentPage, setStudentCurrentPage] = useState(0);
+  const [studentTotalPages, setStudentTotalPages] = useState(0);
+  const [studentTotalStudents, setStudentTotalStudents] = useState(0);
+  const [studentSearchTerm, setStudentSearchTerm] = useState("");
+  const [debouncedStudentSearch, setDebouncedStudentSearch] = useState("");
   
   // Add Students Modal states
   const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
@@ -1037,7 +1047,6 @@ function BatchManagement() {
   const [checkUsersResult, setCheckUsersResult] = useState(null);
   const [inviteExpiryHours, setInviteExpiryHours] = useState(24);
   const [showInviteSection, setShowInviteSection] = useState(false);
-  const [formValid, setFormValid] = useState(false);
   
   // Form state for create batch
   const [formData, setFormData] = useState({
@@ -1046,6 +1055,183 @@ function BatchManagement() {
   });
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+
+  // Debounce batch search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedBatchSearch(batchSearchTerm);
+      setBatchCurrentPage(0); // Reset to first page when search changes
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [batchSearchTerm]);
+
+  // Debounce student search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedStudentSearch(studentSearchTerm);
+      setStudentCurrentPage(0); // Reset to first page when search changes
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [studentSearchTerm]);
+
+  // Fetch all batches with pagination and search
+  const fetchBatches = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      const params = {
+        page: batchCurrentPage,
+        size: 10, // Always 10 per page
+      };
+
+      if (debouncedBatchSearch.trim()) {
+        params.name = debouncedBatchSearch.trim();
+      }
+
+      console.log("Fetching batches with params:", params);
+      
+      const response = await batchManagementApi.batch.getAllBatches(params);
+      console.log("Batches response:", response);
+      
+      setBatches(response.data || []);
+      setBatchTotalPages(response.totalPages || 0);
+      setBatchTotalBatches(response.total || 0);
+      
+      // Fetch student counts for each batch
+      if (response.data && response.data.length > 0) {
+        await fetchBatchStudentCounts(response.data);
+      }
+      
+      setError(null);
+    } catch (err) {
+      setError(err.error || "Failed to load batches");
+      console.error("Error fetching batches:", err);
+      setBatches([]);
+      setBatchTotalPages(0);
+      setBatchTotalBatches(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [batchCurrentPage, debouncedBatchSearch]);
+
+  // Fetch student counts for a list of batches
+  const fetchBatchStudentCounts = async (batchesList) => {
+    try {
+      const counts = {};
+      
+      // Fetch student counts for each batch (first page only to get total)
+      await Promise.all(
+        batchesList.map(async (batch) => {
+          try {
+            const response = await batchManagementApi.student.getStudentsByBatch(batch.id, {
+              page: 0,
+              size: 1 // Just get 1 record to get the total count
+            });
+            counts[batch.id] = response.total || 0;
+          } catch (err) {
+            console.error(`Error fetching count for batch ${batch.id}:`, err);
+            counts[batch.id] = 0;
+          }
+        })
+      );
+      
+      setBatchStudentCounts(counts);
+    } catch (err) {
+      console.error("Error fetching batch student counts:", err);
+    }
+  };
+
+  // Update student count for a specific batch
+  const updateBatchStudentCount = (batchId, newCount) => {
+    setBatchStudentCounts(prev => ({
+      ...prev,
+      [batchId]: newCount
+    }));
+  };
+
+  useEffect(() => {
+    fetchBatches();
+  }, [fetchBatches]);
+
+  // Fetch students for a specific batch with pagination and search
+  const fetchStudents = useCallback(async (batchId, page = 0) => {
+    if (!batchId) return;
+    
+    try {
+      setStudentsLoading(true);
+      
+      const params = {
+        page: page,
+        size: 10, // Always 10 per page
+      };
+
+      // Use debouncedStudentSearch here
+      if (debouncedStudentSearch.trim()) {
+        params.search = debouncedStudentSearch.trim();
+      }
+
+      console.log(`Fetching students for batch ${batchId} with params:`, params);
+      
+      const response = await batchManagementApi.student.getStudentsByBatch(batchId, params);
+      console.log("Students response:", response);
+      
+      setStudents(response.data || []);
+      setStudentTotalPages(response.totalPages || 0);
+      setStudentTotalStudents(response.total || 0);
+      
+      // Update the batch student count with the total from response
+      updateBatchStudentCount(batchId, response.total || 0);
+      
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      // Don't show alert for every search, just log the error
+      setStudents([]);
+      setStudentTotalPages(0);
+      setStudentTotalStudents(0);
+    } finally {
+      setStudentsLoading(false);
+    }
+  }, [debouncedStudentSearch]); // Important: depends on debouncedStudentSearch
+
+  // Effect to trigger fetch when debounced search or page changes
+  useEffect(() => {
+    if (selectedBatch) {
+      fetchStudents(selectedBatch.id, studentCurrentPage);
+    }
+  }, [debouncedStudentSearch, studentCurrentPage, selectedBatch?.id, fetchStudents]);
+
+  // Handle view students
+  const handleViewStudents = (batch) => {
+    setSelectedBatch(batch);
+    setStudentSearchTerm(""); // Reset search
+    setDebouncedStudentSearch(""); // Reset debounced search
+    setStudentCurrentPage(0); // Reset to first page
+    setShowStudentsModal(true);
+    // fetchStudents will be called by the useEffect above
+  };
+
+  // Handle student page change
+  const handleStudentPageChange = (page) => {
+    setStudentCurrentPage(page);
+    // fetchStudents will be called by the useEffect above
+  };
+
+  // Handle student search change
+  const handleStudentSearchChange = (e) => {
+    const value = e.target.value;
+    setStudentSearchTerm(value);
+    // The debounce effect will handle updating debouncedStudentSearch
+    // which will then trigger fetchStudents via the useEffect
+  };
+
+  // Clear student filters
+  const clearStudentFilters = () => {
+    setStudentSearchTerm("");
+    setDebouncedStudentSearch("");
+    setStudentCurrentPage(0);
+  };
 
   // Email validation function
   const validateEmail = (email) => {
@@ -1104,61 +1290,6 @@ function BatchManagement() {
     return { validData, errors };
   };
 
-  // Fetch all batches using API
-  const fetchBatches = async () => {
-    try {
-      setLoading(true);
-      const data = await batchManagementApi.batch.getAllBatches();
-      setBatches(data);
-      await fetchAllStudentCounts(data);
-      setError(null);
-    } catch (err) {
-      setError(err.error || "Failed to load batches");
-      console.error("Error fetching batches:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch student counts for all batches
-  const fetchAllStudentCounts = async (batchesList) => {
-    try {
-      const counts = {};
-      await Promise.all(
-        batchesList.map(async (batch) => {
-          try {
-            const students = await batchManagementApi.student.getStudentsByBatch(batch.id);
-            counts[batch.id] = students.length;
-          } catch (err) {
-            counts[batch.id] = 0;
-          }
-        })
-      );
-      setBatchStudentCounts(counts);
-    } catch (err) {
-      console.error("Error fetching student counts:", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchBatches();
-  }, []);
-
-  // Fetch students for a specific batch using API
-  const fetchStudents = async (batchId) => {
-    try {
-      setStudentsLoading(true);
-      const data = await batchManagementApi.student.getStudentsByBatch(batchId);
-      setStudents(data);
-      setShowStudentsModal(true);
-    } catch (err) {
-      alert(err.error || "Failed to load students");
-      console.error("Error fetching students:", err);
-    } finally {
-      setStudentsLoading(false);
-    }
-  };
-
   // Handle form input change for create batch
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -1197,12 +1328,6 @@ function BatchManagement() {
     }
   };
 
-  // Handle view students
-  const handleViewStudents = (batch) => {
-    setSelectedBatch(batch);
-    fetchStudents(batch.id);
-  };
-
   // Handle add students
   const handleAddStudents = (batch) => {
     setSelectedBatch(batch);
@@ -1222,7 +1347,6 @@ function BatchManagement() {
     const updated = [...manualEntries];
     updated[index][field] = value;
     
-    // Clear error for this field when user types
     if (field === 'email') {
       updated[index].emailError = "";
     } else if (field === 'name') {
@@ -1264,20 +1388,17 @@ function BatchManagement() {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        // Check if required columns exist
         const headers = results.meta.fields || [];
         if (!headers.includes('name') || !headers.includes('email')) {
           alert("CSV must contain 'name' and 'email' columns");
           return;
         }
 
-        // Process each row
         const rawData = results.data.map(row => ({
           name: row.name?.trim() || "",
           email: row.email?.trim() || ""
         }));
 
-        // Validate the data
         const { validData, errors } = validateCSVData(rawData);
         
         if (errors.length > 0) {
@@ -1335,7 +1456,6 @@ function BatchManagement() {
 
   // Check users before adding using API
   const handleCheckUsers = async () => {
-    // Validate based on method
     if (addMethod === 'manual') {
       if (!validateManualEntries()) {
         alert("Please fix the errors in the form");
@@ -1385,11 +1505,9 @@ function BatchManagement() {
 
       alert("Users added successfully!");
       
-      // Update student count
-      setBatchStudentCounts(prev => ({
-        ...prev,
-        [selectedBatch.id]: (prev[selectedBatch.id] || 0) + users.length
-      }));
+      // Update student count for this batch
+      const newCount = (batchStudentCounts[selectedBatch.id] || 0) + users.length;
+      updateBatchStudentCount(selectedBatch.id, newCount);
       
       // Reset and close modal
       setShowAddStudentsModal(false);
@@ -1402,7 +1520,7 @@ function BatchManagement() {
       
       // Refresh students list if modal is open
       if (showStudentsModal) {
-        fetchStudents(selectedBatch.id);
+        fetchStudents(selectedBatch.id, studentCurrentPage);
       }
       
     } catch (err) {
@@ -1422,6 +1540,83 @@ function BatchManagement() {
     await handleAddUsersToBatch(users);
   };
 
+  // Delete student handler
+  const handleDeleteStudent = async (student) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to remove "${student.name}" (ID: ${student.id}) from this batch?`
+    );
+    
+    if (!confirmDelete) return;
+
+    try {
+      setStudentsLoading(true);
+      
+      console.log(`Deleting student with ID: ${student.id} from batch ID: ${selectedBatch.id}`);
+      
+      await batchManagementApi.student.deleteStudentFromBatch(selectedBatch.id, student.id);
+      
+      // Update student count for this batch
+      const newCount = Math.max((batchStudentCounts[selectedBatch.id] || 1) - 1, 0);
+      updateBatchStudentCount(selectedBatch.id, newCount);
+      
+      // Refresh students list after deletion
+      fetchStudents(selectedBatch.id, studentCurrentPage);
+      
+      alert(`"${student.name}" has been removed from the batch successfully!`);
+      
+    } catch (err) {
+      console.error("Error deleting student:", err);
+      alert(err.error || "Failed to remove student from batch. Please try again.");
+    } finally {
+      setStudentsLoading(false);
+    }
+  };
+
+  // Batch pagination handlers
+  const handleBatchPageChange = (page) => {
+    setBatchCurrentPage(page);
+  };
+
+  const handleBatchSearchChange = (e) => {
+    setBatchSearchTerm(e.target.value);
+  };
+
+  const clearBatchFilters = () => {
+    setBatchSearchTerm("");
+    setDebouncedBatchSearch("");
+    setBatchCurrentPage(0);
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = (currentPage, totalPages) => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 0; i < totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      let startPage = Math.max(0, currentPage - Math.floor(maxPagesToShow / 2));
+      let endPage = startPage + maxPagesToShow - 1;
+      
+      if (endPage >= totalPages) {
+        endPage = totalPages - 1;
+        startPage = Math.max(0, endPage - maxPagesToShow + 1);
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+    }
+    
+    return pageNumbers;
+  };
+
+  if (loading && batches.length === 0) {
+    return <div className="loading">Loading batches...</div>;
+  }
+
   return (
     <div className="batch-management">
       <div className="batch-header">
@@ -1436,61 +1631,136 @@ function BatchManagement() {
 
       {error && <div className="error-message">{error}</div>}
 
-      {loading ? (
-        <div className="loading-spinner">Loading batches...</div>
-      ) : (
-        <div className="batch-table-container">
-          <table className="batch-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Batch Name</th>
-                <th>Description</th>
-                <th>Students Count</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {batches.map(batch => (
-                <tr key={batch.id}>
-                  <td>{batch.id}</td>
-                  <td className="batch-name">{batch.name}</td>
-                  <td className="batch-description">{batch.description}</td>
-                  <td className="student-count">
-                    <span className="count-badge">
-                      {batchStudentCounts[batch.id] !== undefined ? batchStudentCounts[batch.id] : 0}
-                    </span>
-                  </td>
-                  <td className="actions">
-                    <button 
-                      className="btn-view"
-                      onClick={() => handleViewStudents(batch)}
-                      title="View Students"
-                    >
-                      <i className="fas fa-eye"></i>
-                      <span>View</span>
-                    </button>
-                    <button 
-                      className="btn-add"
-                      onClick={() => handleAddStudents(batch)}
-                      title="Add Students"
-                    >
-                      <i className="fas fa-user-plus"></i>
-                      <span>Add</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {batches.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="no-data">
-                    No batches found. Click "Create New Batch" to add one.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {/* Search and Filter Section for Batches */}
+      <div className="search-filter-section">
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Search by batch name..."
+            value={batchSearchTerm}
+            onChange={handleBatchSearchChange}
+            className="search-input"
+          />
+          <span className="search-icon">🔍</span>
         </div>
+        
+        <div className="filter-controls">
+          <button onClick={clearBatchFilters} className="clear-filters-btn">
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
+      {/* Results count for batches */}
+      <div className="results-count">
+        Showing {batches.length} of {batchTotalBatches} batches
+        {debouncedBatchSearch && (
+          <span className="active-filters">
+            {` (Search: "${debouncedBatchSearch}")`}
+          </span>
+        )}
+      </div>
+
+      {batches.length === 0 ? (
+        <div className="no-batches">
+          <p>No batches found</p>
+          {debouncedBatchSearch ? (
+            <p className="hint">
+              No batches match your search criteria. Try different search term.
+            </p>
+          ) : (
+            <p className="hint">Click "Create New Batch" to get started</p>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="batch-table-container">
+            <table className="batch-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Batch Name</th>
+                  <th>Description</th>
+                  <th>Students Count</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {batches.map(batch => (
+                  <tr key={batch.id}>
+                    <td>{batch.id}</td>
+                    <td className="batch-name">{batch.name}</td>
+                    <td className="batch-description">{batch.description}</td>
+                    <td className="student-count">
+                      <span className="count-badge">
+                        {batchStudentCounts[batch.id] !== undefined ? batchStudentCounts[batch.id] : 0}
+                      </span>
+                    </td>
+                    <td className="actions">
+                      <button 
+                        className="btn-view"
+                        onClick={() => handleViewStudents(batch)}
+                        title="View Students"
+                      >
+                        <i className="fas fa-eye"></i>
+                        <span>View</span>
+                      </button>
+                      <button 
+                        className="btn-add"
+                        onClick={() => handleAddStudents(batch)}
+                        title="Add Students"
+                      >
+                        <i className="fas fa-user-plus"></i>
+                        <span>Add</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination for Batches */}
+          {batchTotalPages > 1 && (
+            <div className="pagination">
+              <button
+                className="pagination-btn"
+                onClick={() => handleBatchPageChange(batchCurrentPage - 1)}
+                disabled={batchCurrentPage === 0}
+              >
+                ← Previous
+              </button>
+              
+              <div className="page-numbers">
+                {getPageNumbers(batchCurrentPage, batchTotalPages).map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    className={`page-number ${batchCurrentPage === pageNum ? 'active' : ''}`}
+                    onClick={() => handleBatchPageChange(pageNum)}
+                  >
+                    {pageNum + 1}
+                  </button>
+                ))}
+                
+                {batchTotalPages > 5 && batchCurrentPage < batchTotalPages - 3 && (
+                  <span className="ellipsis">...</span>
+                )}
+              </div>
+              
+              <button
+                className="pagination-btn"
+                onClick={() => handleBatchPageChange(batchCurrentPage + 1)}
+                disabled={batchCurrentPage >= batchTotalPages - 1}
+              >
+                Next →
+              </button>
+              
+              <div className="page-info">
+                Page {batchCurrentPage + 1} of {batchTotalPages}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Create Batch Modal */}
@@ -1568,7 +1838,7 @@ function BatchManagement() {
         </div>
       )}
 
-      {/* Students Modal */}
+      {/* Students Modal with Search and Pagination */}
       {showStudentsModal && (
         <div className="modal-overlay">
           <div className="modal-content students-modal">
@@ -1580,36 +1850,153 @@ function BatchManagement() {
                   setShowStudentsModal(false);
                   setSelectedBatch(null);
                   setStudents([]);
+                  setStudentSearchTerm("");
+                  setDebouncedStudentSearch("");
+                  setStudentCurrentPage(0);
                 }}
               >
                 ×
               </button>
             </div>
 
+            {/* Clean Search Bar - No Button */}
+            <div className="search-bar-container">
+              <div className="search-input-wrapper">
+                <i className="fas fa-search search-icon"></i>
+                <input
+                  type="text"
+                  placeholder="Search by name, email, or ID... (type to search)"
+                  value={studentSearchTerm}
+                  onChange={handleStudentSearchChange}
+                  className="student-search-input"
+                  autoFocus
+                />
+                {studentSearchTerm && (
+                  <button 
+                    className="clear-search-icon"
+                    onClick={clearStudentFilters}
+                    title="Clear search"
+                  >
+                    <i className="fas fa-times"></i>
+                  </button>
+                )}
+              </div>
+              {studentSearchTerm && !studentsLoading && (
+                <div className="search-hint">
+                  Searching for "{studentSearchTerm}"...
+                </div>
+              )}
+            </div>
+
+            {/* Results count for students */}
+            <div className="results-count">
+              {studentTotalStudents > 0 ? (
+                <>Showing {students.length} of {studentTotalStudents} students</>
+              ) : (
+                <>No students found</>
+              )}
+              {debouncedStudentSearch && (
+                <span className="active-filters">
+                  {` (Search: "${debouncedStudentSearch}")`}
+                </span>
+              )}
+            </div>
+
             {studentsLoading ? (
-              <div className="loading-spinner">Loading students...</div>
+              <div className="loading-spinner">
+                <i className="fas fa-spinner fa-spin"></i> Loading students...
+              </div>
             ) : (
               <div className="students-list">
                 {students.length > 0 ? (
                   <table className="students-table">
                     <thead>
                       <tr>
+                        <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
+                        <th className="actions-column">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {students.map((student, index) => (
-                        <tr key={index}>
+                      {students.map((student) => (
+                        <tr key={student.id}>
+                          <td>{student.id}</td>
                           <td>{student.name}</td>
                           <td>{student.email}</td>
+                          <td className="actions-cell">
+                            <button 
+                              className="btn-delete-student"
+                              onClick={() => handleDeleteStudent(student)}
+                              title="Remove student from batch"
+                            >
+                              <i className="fas fa-trash-alt"></i>
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 ) : (
-                  <p className="no-students">No students found in this batch</p>
+                  <div className="no-results">
+                    <i className="fas fa-search"></i>
+                    <p>No students found</p>
+                    {debouncedStudentSearch ? (
+                      <>
+                        <p className="hint">No results match "{debouncedStudentSearch}"</p>
+                        <button 
+                          onClick={clearStudentFilters} 
+                          className="clear-search-btn"
+                        >
+                          Clear Search
+                        </button>
+                      </>
+                    ) : (
+                      <p className="hint">This batch doesn't have any students yet.</p>
+                    )}
+                  </div>
                 )}
+              </div>
+            )}
+
+            {/* Pagination for Students */}
+            {studentTotalPages > 1 && students.length > 0 && (
+              <div className="pagination">
+                <button
+                  className="pagination-btn"
+                  onClick={() => handleStudentPageChange(studentCurrentPage - 1)}
+                  disabled={studentCurrentPage === 0}
+                >
+                  ← Previous
+                </button>
+                
+                <div className="page-numbers">
+                  {getPageNumbers(studentCurrentPage, studentTotalPages).map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      className={`page-number ${studentCurrentPage === pageNum ? 'active' : ''}`}
+                      onClick={() => handleStudentPageChange(pageNum)}
+                    >
+                      {pageNum + 1}
+                    </button>
+                  ))}
+                  
+                  {studentTotalPages > 5 && studentCurrentPage < studentTotalPages - 3 && (
+                    <span className="ellipsis">...</span>
+                  )}
+                </div>
+                
+                <button
+                  className="pagination-btn"
+                  onClick={() => handleStudentPageChange(studentCurrentPage + 1)}
+                  disabled={studentCurrentPage >= studentTotalPages - 1}
+                >
+                  Next →
+                </button>
+                
+                <div className="page-info">
+                  Page {studentCurrentPage + 1} of {studentTotalPages}
+                </div>
               </div>
             )}
 
@@ -1620,6 +2007,9 @@ function BatchManagement() {
                   setShowStudentsModal(false);
                   setSelectedBatch(null);
                   setStudents([]);
+                  setStudentSearchTerm("");
+                  setDebouncedStudentSearch("");
+                  setStudentCurrentPage(0);
                 }}
               >
                 Close
