@@ -7,7 +7,7 @@ import AddQuestionsModal from "./AddQuestionsModal";
 import AssignCandidatesModal from "./AssignCandidatesModal";
 import "../../styles/ExamTable.css";
 
-function OverviewExamTable({ onOpenAnalytics, onMonitorExam }) {
+function OverviewExamTable({ onSelectExam, selectedExamId }) {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddQuestionsModal, setShowAddQuestionsModal] = useState(false);
@@ -116,16 +116,16 @@ function OverviewExamTable({ onOpenAnalytics, onMonitorExam }) {
     fetchExams(); // Refresh exams after modal actions
   };
 
-  const getExamActions = (exam) => {
-    return (
-        <button
-        className="btn-action btn-analytics"
-        onClick={() => onOpenAnalytics(exam.id)}
-        >
-        Open Analytics
-        </button>
-    );
-    };
+//   const getExamActions = (exam) => {
+//     return (
+//         <button
+//         className="btn-action btn-analytics"
+//         onClick={() => onOpenAnalytics(exam.id)}
+//         >
+//         Open Analytics
+//         </button>
+//     );
+//     };
 
   const getExamStage = (exam) => {
     const status = exam.status?.toUpperCase() || "DRAFT";
@@ -286,12 +286,16 @@ function OverviewExamTable({ onOpenAnalytics, onMonitorExam }) {
                 {/* <th>Duration</th> */}
                 <th>Start Date</th>
                 {/* <th>End Date</th> */}
-                <th>Actions</th>
+                {/* <th>Actions</th> */}
               </tr>
             </thead>
             <tbody>
               {exams.map((exam) => (
-                <tr key={exam.id}>
+                <tr
+                    key={exam.id}
+                    className={`clickable-row ${selectedExamId === exam.id ? "selected-row" : ""}`}
+                    onClick={() => onSelectExam(exam.id)}
+                >
                   <td className="exam-title">
                     <strong>{exam.title || "Untitled Exam"}</strong>
                     {exam.description && (
@@ -306,9 +310,9 @@ function OverviewExamTable({ onOpenAnalytics, onMonitorExam }) {
                   {/* <td>{exam.duration || 0} minutes</td> */}
                   <td>{formatDateTime(exam.startDate)}</td>
                   {/* <td>{formatDateTime(exam.endDate)}</td> */}
-                  <td>
+                  {/* <td>
                     <div className="action-buttons">{getExamActions(exam)}</div>
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>

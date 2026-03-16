@@ -175,3 +175,29 @@ border-bottom:1px solid #eee;
   }
 
 }
+
+.exam-wise-stats{
+  margin-top:30px;
+}
+
+.exam-stats-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+.slot-card{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  border:1px solid #eee;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+  min-height:420px;
+}
+
+.analytics-cards{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:20px;
+}

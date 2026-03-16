@@ -474,3 +474,17 @@
     margin: 10px 0;
   }
 }
+
+.clickable-row{
+  cursor:pointer;
+  transition:background 0.2s ease;
+}
+
+.clickable-row:hover{
+  background:#f4f6ff;
+}
+
+.selected-row{
+  background:#e8ebff;
+  border-left:4px solid #6c63ff;
+}
