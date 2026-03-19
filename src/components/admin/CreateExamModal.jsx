@@ -484,7 +484,7 @@ Please check:
             </div>
             
             <div className="form-group">
-              <label htmlFor="title">Exam Title *</label>
+              <label htmlFor="title">Exam Title </label>
               <input
                 type="text"
                 id="title"
@@ -498,7 +498,7 @@ Please check:
             </div>
 
             <div className="form-group">
-              <label htmlFor="description">Description *</label>
+              <label htmlFor="description">Description </label>
               <textarea
                 id="description"
                 name="description"
@@ -513,7 +513,7 @@ Please check:
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="startDate">Start Date & Time *</label>
+                <label htmlFor="startDate">Start Date & Time </label>
                 <input
                   type="datetime-local"
                   id="startDate"
@@ -527,7 +527,7 @@ Please check:
               </div>
 
               <div className="form-group">
-                <label htmlFor="endDate">End Date & Time *</label>
+                <label htmlFor="endDate">End Date & Time </label>
                 <input
                   type="datetime-local"
                   id="endDate"
@@ -543,7 +543,7 @@ Please check:
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="duration">Duration (minutes) *</label>
+                <label htmlFor="duration">Duration (minutes) </label>
                 <input
                   type="number"
                   id="duration"
@@ -559,7 +559,7 @@ Please check:
               </div>
           
               <div className="form-group">
-                <label htmlFor="cutoff">Cutoff (%) *</label>
+                <label htmlFor="cutoff">Cutoff (%) </label>
                 <input
                   type="number"
                   id="cutoff"

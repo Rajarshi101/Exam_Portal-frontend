@@ -11,7 +11,7 @@ function AdminSidebar({ setActiveTab }) {
 
   const navigate = useNavigate();
 
-  const handleTabClick = (tabKey, index) => {
+  const handleTabClick = (tabKey) => {
     setLocalActiveTab(tabKey);
     setActiveTab(tabKey);
   };
@@ -45,8 +45,10 @@ function AdminSidebar({ setActiveTab }) {
                 ? "translateY(60px)"
                 : activeTab === "allExams"
                 ? "translateY(120px)"
-                : activeTab === "inviteAdmin"
+                : activeTab === "batches"
                 ? "translateY(180px)"
+                : activeTab === "inviteAdmin"
+                ? "translateY(240px)"
                 : "translateY(0px)",
           }}
         />
@@ -63,6 +65,11 @@ function AdminSidebar({ setActiveTab }) {
       <button className={`nav-item ${activeTab === "allExams" ? "active" : ""}`} onClick={() => handleTabClick("allExams")}>
         <i className="fas fa-desktop"></i>
         {!collapsed && <span>All Exams</span>}
+      </button>
+
+      <button className={`nav-item ${activeTab === "batches" ? "active" : ""}`} onClick={() => handleTabClick("batches")}>
+        <i className="fas fa-users"></i>
+        {!collapsed && <span>Batches</span>}
       </button>
 
       <button className={`nav-item ${activeTab === "inviteAdmin" ? "active" : ""}`} onClick={() => handleTabClick("inviteAdmin")}>

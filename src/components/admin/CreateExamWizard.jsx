@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   createExam, 
   publishExam, 
@@ -6,6 +6,7 @@ import {
   uploadExamCandidatesCSV,
   uploadQuestionsCSV
 } from "../../api/examApi";
+import { batchApi, studentApi } from "../../api/batchManagementApi";
 import "../../styles/CreateExamWizard.css";
 import "../../styles/CreateExamModal.css";
 
@@ -13,7 +14,8 @@ function CreateExamWizard() {
   const [createdExamId, setCreatedExamId] = useState(null);
   const [step, setStep] = useState(1);
   const [uploading, setUploading] = useState(false);
-  const [inviting, setInviting] = useState(false); // Add inviting state
+  const [inviting, setInviting] = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState(false);
 
   // STEP 1
   const [examDetails, setExamDetails] = useState({
@@ -29,11 +31,97 @@ function CreateExamWizard() {
   const [questions, setQuestions] = useState([]);
   const [questionsFile, setQuestionsFile] = useState(null);
 
-  // STEP 3
+  // STEP 3 - Invite Methods
   const [inviteMethod, setInviteMethod] = useState("individual");
   const [candidates, setCandidates] = useState([{ name: "", email: "" }]);
   const [bulkCandidates, setBulkCandidates] = useState([]);
   const [bulkCSVFile, setBulkCSVFile] = useState(null);
+
+  // Batch related states
+  const [batches, setBatches] = useState([]);
+  const [selectedBatch, setSelectedBatch] = useState(null);
+  const [batchSearchTerm, setBatchSearchTerm] = useState("");
+  const [showBatchDropdown, setShowBatchDropdown] = useState(false);
+  const [batchStudents, setBatchStudents] = useState([]);
+  const [loadingBatches, setLoadingBatches] = useState(false);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [selectedBatchCandidates, setSelectedBatchCandidates] = useState([]);
+
+  // Fetch all batches on component mount
+  useEffect(() => {
+    fetchBatches();
+  }, []);
+
+  const fetchBatches = async () => {
+    try {
+      setLoadingBatches(true);
+      const response = await batchApi.getAllBatches();
+      setBatches(response.data || []);
+    } catch (err) {
+      console.error("Error fetching batches:", err);
+    } finally {
+      setLoadingBatches(false);
+    }
+  };
+
+  const fetchBatchStudents = async (batchId) => {
+    try {
+      setLoadingStudents(true);
+      const response = await studentApi.getStudentsByBatch(batchId);
+      const data = response.data || [];
+      setBatchStudents(data);
+      
+      // Format students for display
+      const formattedStudents = data.map(student => ({
+        id: student.id,
+        name: student.name,
+        email: student.email,
+        selected: false
+      }));
+      setSelectedBatchCandidates(formattedStudents);
+    } catch (err) {
+      console.error("Error fetching batch students:", err);
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
+
+  const handleBatchSelect = (batch) => {
+    setSelectedBatch(batch);
+    setBatchSearchTerm(batch.name);
+    setShowBatchDropdown(false);
+    fetchBatchStudents(batch.id);
+  };
+
+  const filteredBatches = batches.filter(batch =>
+    batch.name.toLowerCase().includes(batchSearchTerm.toLowerCase())
+  );
+
+  const toggleStudentSelection = (index) => {
+    const updated = [...selectedBatchCandidates];
+    updated[index].selected = !updated[index].selected;
+    setSelectedBatchCandidates(updated);
+  };
+
+  const selectAllStudents = () => {
+    const updated = selectedBatchCandidates.map(student => ({
+      ...student,
+      selected: true
+    }));
+    setSelectedBatchCandidates(updated);
+  };
+
+  const deselectAllStudents = () => {
+    const updated = selectedBatchCandidates.map(student => ({
+      ...student,
+      selected: false
+    }));
+    setSelectedBatchCandidates(updated);
+  };
+
+  const getSelectedStudentsCount = () => {
+    return selectedBatchCandidates.filter(s => s.selected).length;
+  };
 
   /* ---------------- STEP 1 ---------------- */
   const handleDetailsChange = (e) => {
@@ -186,7 +274,9 @@ function CreateExamWizard() {
   };
   
   const removeCandidateField = (index) => {
-    setCandidates(candidates.filter((_, i) => i !== index));
+    if (candidates.length > 1) {
+      setCandidates(candidates.filter((_, i) => i !== index));
+    }
   };
   
   const handleBulkCSV = (e) => {
@@ -222,12 +312,16 @@ function CreateExamWizard() {
     try {
       setInviting(true);
       
+      let validCandidates = [];
+      
       if (inviteMethod === "individual") {
-        // Call candidate-multiple-invite endpoint for manual entries
-        console.log("Sending candidates:", candidates);
-        await inviteMultipleCandidates(createdExamId, candidates);
-      } else {
-        // Bulk CSV upload - call candidates/upload endpoint
+        validCandidates = candidates.filter(c => c.name.trim() && c.email.trim());
+        if (validCandidates.length === 0) {
+          alert("Please add at least one candidate with name and email");
+          setInviting(false);
+          return;
+        }
+      } else if (inviteMethod === "bulk") {
         if (!bulkCSVFile) {
           alert("Please upload a CSV file for candidates.");
           setInviting(false);
@@ -236,12 +330,36 @@ function CreateExamWizard() {
         
         console.log("Uploading CSV file:", bulkCSVFile.name);
         await uploadExamCandidatesCSV(createdExamId, bulkCSVFile);
+        
+        setInviteSuccess(true);
+        setTimeout(() => {
+          resetForm();
+        }, 2000);
+        return;
+      } else if (inviteMethod === "batch") {
+        validCandidates = selectedBatchCandidates
+          .filter(s => s.selected)
+          .map(({ name, email }) => ({ name, email }));
+        
+        if (validCandidates.length === 0) {
+          alert("Please select at least one student from the batch");
+          setInviting(false);
+          return;
+        }
       }
 
+      // For individual and batch methods, use the multiple invite API
+      if (inviteMethod !== "bulk") {
+        await inviteMultipleCandidates(createdExamId, validCandidates);
+      }
+
+      setInviteSuccess(true);
       alert("Exam created and candidates invited successfully ✅");
       
-      // Reset the form
-      resetForm();
+      setTimeout(() => {
+        resetForm();
+      }, 2000);
+      
     } catch (err) {
       console.error("Invitation error:", err);
       console.error("Error response:", err.response?.data);
@@ -273,7 +391,11 @@ function CreateExamWizard() {
     setCandidates([{ name: "", email: "" }]);
     setBulkCandidates([]);
     setBulkCSVFile(null);
+    setSelectedBatch(null);
+    setBatchSearchTerm("");
+    setSelectedBatchCandidates([]);
     setCreatedExamId(null);
+    setInviteSuccess(false);
   };
 
   return (
@@ -286,16 +408,6 @@ function CreateExamWizard() {
       </div>
 
       {/* STEP 1 */}
-      {/* {step === 1 && (
-        <div className="wizard-step modal-card">
-          <input name="title" placeholder="Exam Title" value={examDetails.title} onChange={handleDetailsChange} />
-          <textarea name="description" placeholder="Description" value={examDetails.description} onChange={handleDetailsChange} />
-          <input type="datetime-local" name="startDateTime" value={examDetails.startDateTime} onChange={handleDetailsChange} />
-          <input type="datetime-local" name="endDateTime" value={examDetails.endDateTime} onChange={handleDetailsChange} />
-          <input type="number" name="duration" placeholder="Duration (minutes)" value={examDetails.duration} onChange={handleDetailsChange} />
-          <button className="next-btn" onClick={goToStep2}>Next</button>
-        </div>
-      )} */}
       {step === 1 && (
         <div className="wizard-step modal-card">
 
@@ -305,7 +417,7 @@ function CreateExamWizard() {
 
           <div className="form-group">
             <label>
-              Exam Title <span className="required">*</span>
+              Exam Title
             </label>
             <input
               type="text"
@@ -318,7 +430,7 @@ function CreateExamWizard() {
 
           <div className="form-group">
             <label>
-              Description <span className="required">*</span>
+              Description
             </label>
             <textarea
               name="description"
@@ -331,7 +443,7 @@ function CreateExamWizard() {
           <div className="form-row">
             <div className="form-group">
               <label>
-                Start Date & Time <span className="required">*</span>
+                Start Date & Time
               </label>
               <input
                 type="datetime-local"
@@ -346,7 +458,7 @@ function CreateExamWizard() {
 
             <div className="form-group">
               <label>
-                End Date & Time <span className="required">*</span>
+                End Date & Time
               </label>
               <input
                 type="datetime-local"
@@ -363,7 +475,7 @@ function CreateExamWizard() {
           <div className="form-row">
             <div className="form-group">
               <label>
-                Duration (minutes) <span className="required">*</span>
+                Duration (minutes)
               </label>
               <input
                 type="number"
@@ -379,7 +491,7 @@ function CreateExamWizard() {
 
             <div className="form-group">
               <label>
-                Cutoff (%) <span className="required">*</span>
+                Cutoff (%)
               </label>
               <input
                 type="number"
@@ -509,6 +621,17 @@ function CreateExamWizard() {
               />
               Bulk CSV Upload
             </label>
+
+            <label className="radio-option">
+              <input
+                type="radio"
+                name="inviteMethod"
+                value="batch"
+                checked={inviteMethod === "batch"}
+                onChange={() => setInviteMethod("batch")}
+              />
+              Assign by Batch
+            </label>
           </div>
 
           {/* MANUAL ENTRY */}
@@ -537,11 +660,11 @@ function CreateExamWizard() {
                   {candidates.length > 1 && (
                     <button
                       type="button"
-                      className="delete-btn"
+                      className="btn-delete-student"
                       onClick={() => removeCandidateField(index)}
                       title="Remove"
                     >
-                      <span className="trash-icon">🗑</span>
+                      <i className="fas fa-trash-alt"></i>
                     </button>
                   )}
                 </div>
@@ -611,13 +734,130 @@ function CreateExamWizard() {
             </div>
           )}
 
-          <button 
-            className="finish-btn" 
-            onClick={finishCreatingExam}
-            disabled={inviting}
-          >
-            {inviting ? "Inviting Candidates..." : "Finish & Send Invitations"}
-          </button>
+          {/* BATCH ASSIGNMENT */}
+          {inviteMethod === "batch" && (
+            <div className="invite-section batch-section">
+              <label>Select Batch</label>
+              
+              {/* Batch Search Dropdown */}
+              <div className="batch-search-container">
+                <div className="search-input-wrapper">
+                  <input
+                    type="text"
+                    placeholder="Search for a batch..."
+                    value={batchSearchTerm}
+                    onChange={(e) => {
+                      setBatchSearchTerm(e.target.value);
+                      setShowBatchDropdown(true);
+                      setSelectedBatch(null);
+                    }}
+                    onFocus={() => setShowBatchDropdown(true)}
+                    className="batch-search-input"
+                  />
+                  {loadingBatches && <span className="search-spinner">⏳</span>}
+                </div>
+
+                {showBatchDropdown && batchSearchTerm && (
+                  <div className="batch-dropdown">
+                    {filteredBatches.length > 0 ? (
+                      filteredBatches.map(batch => (
+                        <div
+                          key={batch.id}
+                          className="batch-option"
+                          onClick={() => handleBatchSelect(batch)}
+                        >
+                          <strong>{batch.name}</strong>
+                          <small>{batch.description}</small>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="no-batches">No batches found</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Batch Info */}
+              {selectedBatch && (
+                <div className="selected-batch-info">
+                  <h4>Selected Batch: {selectedBatch.name}</h4>
+                  <p className="batch-description">{selectedBatch.description}</p>
+                </div>
+              )}
+
+              {/* Students List */}
+              {selectedBatch && (
+                <div className="batch-students-section">
+                  <div className="students-header">
+                    <h4>Students in this batch</h4>
+                    <div className="student-selection-actions">
+                      <button 
+                        className="small-btn"
+                        onClick={selectAllStudents}
+                        disabled={loadingStudents}
+                      >
+                        Select All
+                      </button>
+                      <button 
+                        className="small-btn"
+                        onClick={deselectAllStudents}
+                        disabled={loadingStudents}
+                      >
+                        Deselect All
+                      </button>
+                    </div>
+                  </div>
+
+                  {loadingStudents ? (
+                    <div className="loading-students">Loading students...</div>
+                  ) : (
+                    <>
+                      <div className="students-count">
+                        {getSelectedStudentsCount()} of {selectedBatchCandidates.length} students selected
+                      </div>
+
+                      <div className="students-list-container">
+                        {selectedBatchCandidates.length > 0 ? (
+                          selectedBatchCandidates.map((student, index) => (
+                            <div key={index} className="student-item">
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={student.selected}
+                                  onChange={() => toggleStudentSelection(index)}
+                                />
+                                <div className="student-info">
+                                  <span className="student-name">{student.name}</span>
+                                  <span className="student-email">{student.email}</span>
+                                </div>
+                              </label>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="no-students">No students found in this batch</p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="step-actions">
+            <button 
+              className="finish-btn" 
+              onClick={finishCreatingExam}
+              disabled={
+                inviting || 
+                (inviteMethod === "batch" && getSelectedStudentsCount() === 0) ||
+                (inviteMethod === "individual" && candidates.filter(c => c.name && c.email).length === 0) ||
+                (inviteMethod === "bulk" && !bulkCSVFile)
+              }
+            >
+              {inviting ? "Inviting..." : inviteSuccess ? "✓ Invited!" : "Finish & Send Invitations"}
+            </button>
+          </div>
         </div>
       )}
     </div>

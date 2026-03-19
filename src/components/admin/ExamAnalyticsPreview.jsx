@@ -9,15 +9,26 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ReferenceLine
+  ReferenceLine,
+  BarChart,
+  Bar
 } from "recharts";
 
-// import "../../styles/ExamAnalyticsModal.css";
+// import "../../styles/ExamAnalyticsPreview.css";
 
 function ExamAnalyticsPreview({ examId }) {
 
   const [analytics, setAnalytics] = useState(null);
   const [graphData, setGraphData] = useState([]);
+
+  const barData = analytics
+  ? [
+      { name: "Invited", value: analytics.invited },
+      { name: "Pending", value: analytics.pending },
+      { name: "Completed", value: analytics.completed },
+      { name: "Expired", value: analytics.expired }
+    ]
+  : [];
 
   // Convert backend points -> grouped chart data
   const prepareGraphData = (points) => {
@@ -68,16 +79,11 @@ function ExamAnalyticsPreview({ examId }) {
 
   }, [examId]);
 
+  const placeholder = "???"
 
-  if (!analytics) {
-    return (
-      <div className="analytics-modal">
-        <div className="analytics-content">
-          <h3>Loading Analytics...</h3>
-        </div>
-      </div>
-    );
-  }
+  // if (!analytics) {
+  //   return (placeholder);
+  // }
 
 
   return (
@@ -97,27 +103,27 @@ function ExamAnalyticsPreview({ examId }) {
 
           <div className="stat-box">
             <h4>Total Candidates</h4>
-            <p>{analytics.totalCandidates}</p>
+            <p>{analytics ? analytics.totalCandidates : placeholder}</p>
           </div>
 
           <div className="stat-box">
             <h4>Submissions</h4>
-            <p>{analytics.submissions}</p>
+            <p>{analytics ? analytics.submissions : placeholder}</p>
           </div>
 
           <div className="stat-box">
             <h4>Qualified</h4>
-            <p>{analytics.qualified}</p>
+            <p>{analytics ? analytics.qualified : placeholder}</p>
           </div>
 
           <div className="stat-box">
             <h4>Failed</h4>
-            <p>{analytics.failed}</p>
+            <p>{analytics ? analytics.failed : placeholder}</p>
           </div>
 
           <div className="stat-box">
             <h4>Cutoff</h4>
-            <p>{analytics.cutoff}%</p>
+            <p>{analytics ? `${analytics.cutoff}%` : placeholder}</p>
           </div>
 
         </div>
@@ -127,7 +133,7 @@ function ExamAnalyticsPreview({ examId }) {
 
         <div className="analytics-graph">
 
-          <ResponsiveContainer width="100%" height={420}>
+          <ResponsiveContainer width="100%" height={180}>
 
             <ScatterChart>
 
@@ -155,7 +161,9 @@ function ExamAnalyticsPreview({ examId }) {
                 label={{
                   value: "Violation Count",
                   angle: -90,
-                  position: "insideLeft"
+                  position: "insideLeft",
+                  textAnchor: "middle",
+                  offset: +20
                 }}
               />
 
@@ -209,7 +217,7 @@ function ExamAnalyticsPreview({ examId }) {
               {/* Cutoff Line */}
 
               <ReferenceLine
-                x={analytics.cutoff}
+                x={analytics ? analytics.cutoff : 0}
                 stroke="red"
                 strokeDasharray="5 5"
                 label={{
@@ -220,6 +228,49 @@ function ExamAnalyticsPreview({ examId }) {
               />
 
             </ScatterChart>
+
+          </ResponsiveContainer>
+
+        </div>
+
+        {/* Candidate Status (Per Exam) */}
+
+        <div className="exam-bar-graph">
+
+          <h4 className="sub-chart-title">Candidate Status (This Exam)</h4>
+
+          <ResponsiveContainer width="100%" height={180}>
+
+            <BarChart
+              data={barData
+              //   [
+              //   {
+              //     name: "Submissions",
+              //     value: analytics ? analytics.submissions : 0
+              //   },
+              //   {
+              //     name: "Qualified",
+              //     value: analytics ? analytics.qualified : 0
+              //   },
+              //   {
+              //     name: "Failed",
+              //     value: analytics ? analytics.failed : 0
+              //   }
+              // ]
+              }
+            >
+
+              <CartesianGrid strokeDasharray="3 3" />
+
+              <XAxis dataKey="name" />
+
+              <YAxis allowDecimals={false} />
+
+              <Tooltip />
+
+              <Bar dataKey="value" fill="#6c63ff" />
+
+            </BarChart>
 
           </ResponsiveContainer>
 

@@ -92,3 +92,8 @@ export const getSnapshotImage = (snapshotId) => {
     }
   });
 };
+
+export const sendResultsToCandidates = (examId, emails) => {
+  return api.post(`/admin/exams/${examId}/sendresult`, { emails });
+};
+ 

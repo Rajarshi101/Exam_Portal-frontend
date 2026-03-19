@@ -1069,3 +1069,38 @@ td .btn-action {
   background-color: #f8d7da;
   color: #721c24;
 }
+
+
+
+ 
+/* Add to your existing AdminMonitoringDashboard.css */
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+ 
+.btn-invite-all {
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.3s;
+}
+ 
+.btn-invite-all:hover:not(:disabled) {
+  background-color: #0052a3;
+}
+ 
+.btn-invite-all:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}

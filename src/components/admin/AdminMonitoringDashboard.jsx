@@ -3,11 +3,13 @@ import {
   getExams,
   getExamSubmissions,
   getExamQuestions,
+  sendResultsToCandidates, // Add this import
 } from "../../api/examApi";
 import SecureSnapshotImage from "./SecureSnapshotImage";
-import SnapshotViewerModal from "./SnapshotViewerModal"; // Add this import
+import SnapshotViewerModal from "./SnapshotViewerModal";
+import ResultPopup from "./ResultPopup"; // Add this import
 import "../../styles/AdminMonitoringDashboard.css";
-
+ 
 function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
   const [exams, setExams] = useState([]);
   const [submissions, setSubmissions] = useState([]);
@@ -17,12 +19,16 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
   const [expandedAnswers, setExpandedAnswers] = useState(null);
   const [examQuestions, setExamQuestions] = useState({});
   const [questionsLoading, setQuestionsLoading] = useState({});
-
+ 
   // New state for snapshot viewer modal
   const [showSnapshotViewer, setShowSnapshotViewer] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
-
-
+ 
+  // New state for result popup
+  const [showResultPopup, setShowResultPopup] = useState(false);
+  const [resultData, setResultData] = useState(null);
+  const [sendingResults, setSendingResults] = useState(false);
+ 
   useEffect(() => {
     if (examId) {
       fetchSubmissions(examId);
@@ -31,7 +37,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
       fetchExams();
     }
   }, [examId]);
-
+ 
   const fetchExams = async () => {
     try {
       setLoading(true);
@@ -44,12 +50,12 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
       setLoading(false);
     }
   };
-
+ 
   const fetchSubmissions = async (id) => {
     try {
       setSubmissionsLoading(true);
       const response = await getExamSubmissions(id);
-      console.log("Submissions response:", response.data); // Debug log
+      console.log("Submissions response:", response.data);
       setSubmissions(response.data || []);
     } catch (error) {
       console.error("Error fetching submissions:", error);
@@ -59,7 +65,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
       setSubmissionsLoading(false);
     }
   };
-
+ 
   const fetchExamQuestions = async (id) => {
     try {
       setQuestionsLoading((prev) => ({ ...prev, [id]: true }));
@@ -74,32 +80,61 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
       setQuestionsLoading((prev) => ({ ...prev, [id]: false }));
     }
   };
-
+ 
+  // New function to handle sending results to all candidates
+  const handleSendResultsToAll = async () => {
+    if (!examId) return;
+   
+    // Get all unique candidate emails from submissions
+    const emails = [...new Set(submissions.map(s => s.candidateEmail))];
+   
+    if (emails.length === 0) {
+      alert("No candidates found to send results to");
+      return;
+    }
+ 
+    if (!window.confirm(`Send results to ${emails.length} candidates?`)) {
+      return;
+    }
+ 
+    try {
+      setSendingResults(true);
+      const response = await sendResultsToCandidates(examId, emails);
+      console.log("Send results response:", response.data);
+     
+      // Show the result popup
+      setResultData(response.data);
+      setShowResultPopup(true);
+    } catch (error) {
+      console.error("Error sending results:", error);
+      alert("Failed to send results. Please try again.");
+    } finally {
+      setSendingResults(false);
+    }
+  };
+ 
   const handleViewSnapshotModal = (submission) => {
     setSelectedSubmission(submission);
     setShowSnapshotViewer(true);
-    // Close other expanded views
     setExpandedSubmission(null);
     setExpandedAnswers(null);
   };
-
+ 
   const handleViewSnapshot = (submissionId) => {
     setExpandedSubmission((prev) =>
       prev === submissionId ? null : submissionId,
     );
-    
-    // Close answers and modal when opening inline snapshots
+   
     setExpandedAnswers(null);
     setShowSnapshotViewer(false);
   };
-
+ 
   const handleViewAnswers = (submissionId) => {
     setExpandedAnswers((prev) => (prev === submissionId ? null : submissionId));
-    // Close snapshots when opening answers
     setExpandedSubmission(null);
     setShowSnapshotViewer(false);
   };
-
+ 
   const getStatusBadge = (status) => {
     switch (status) {
       case "PUBLISHED":
@@ -110,24 +145,24 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
         return <span className="status-badge unknown">{status}</span>;
     }
   };
-
+ 
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return "Not started";
     return new Date(dateTimeString).toLocaleString();
   };
-
+ 
   const calculateProgress = (submission) => {
     if (!submission.startedAt) return 0;
     if (submission.completed) return 100;
     return 50;
   };
-
+ 
   const getAnswerStatus = (questionId, submissionAnswers, correctOption) => {
     const userAnswer = submissionAnswers?.[questionId];
     if (!userAnswer) return "not-answered";
     return userAnswer === correctOption ? "correct" : "incorrect";
   };
-
+ 
   const renderAnswersPreview = (submission, questions) => {
     if (!questions || questions.length === 0) {
       return (
@@ -136,11 +171,11 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
         </div>
       );
     }
-
+ 
     const totalQuestions = questions.length;
     const answeredQuestions = Object.keys(submission.answers || {}).length;
     const answeredPercentage = (answeredQuestions / totalQuestions) * 100;
-
+ 
     return (
       <div className="answers-preview-container">
         <div className="answers-header">
@@ -186,7 +221,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
             </div>
           </div>
         </div>
-
+ 
         <div className="questions-list">
           {questions.map((question, index) => {
             const userAnswer = submission.answers?.[question.id];
@@ -196,7 +231,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
               submission.answers,
               question.correctOption,
             );
-
+ 
             return (
               <div key={question.id} className={`question-item ${status}`}>
                 <div className="question-header">
@@ -211,18 +246,17 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                   </span>
                 </div>
                 <div className="question-text">{question.text}</div>
-                {/* // In the options rendering section, update the option-item JSX: */}
                 <div className="options-grid">
                   {question.options &&
                     Object.entries(question.options).map(([key, value]) => {
                       const isSelected = userAnswer === key;
                       const isCorrectOption = question.correctOption === key;
-
+ 
                       return (
                         <div
                           key={key}
-                          className={`option-item 
-          ${isSelected ? "selected" : ""} 
+                          className={`option-item
+          ${isSelected ? "selected" : ""}
           ${isCorrectOption ? "correct-option" : ""}
           ${isSelected && isCorrectOption ? "correct-selection" : ""}
           ${isSelected && !isCorrectOption ? "incorrect-selection" : ""}
@@ -257,21 +291,30 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
       </div>
     );
   };
-
+ 
   // If examId is provided, show submissions for that exam
   if (examId) {
     const questions = examQuestions[examId] || [];
     const isLoadingQuestions = questionsLoading[examId];
-
+ 
     return (
       <div className="monitoring-dashboard">
         <div className="exams-header">
           <h1>Monitoring Exam {examId}</h1>
-          <button className="btn-back" onClick={onBack}>
-            ← Back to All Exams
-          </button>
+          <div className="header-buttons">
+            <button
+              className="btn-invite-all"
+              onClick={handleSendResultsToAll}
+              disabled={submissionsLoading || sendingResults || submissions.length === 0}
+            >
+              {sendingResults ? "Sending..." : "📧 send results "}
+            </button>
+            <button className="btn-back" onClick={onBack}>
+              ← Back to All Exams
+            </button>
+          </div>
         </div>
-
+ 
         <div className="submissions-container">
           {submissionsLoading ? (
             <div className="loading">Loading submissions...</div>
@@ -383,7 +426,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                               ) : (
                                 <span className="no-snapshots">No snapshots</span>
                               )}
-
+ 
                               {submission.completed && (
                                 <button
                                   className="btn-action btn-answers"
@@ -402,8 +445,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                             </div>
                           </td>
                         </tr>
-
-                        {/* Snapshots Row (Inline view - optional, you can remove this if using modal only) */}
+ 
                         {/* Snapshots Row (Inline view) */}
                         {expandedSubmission === submission.submissionId &&
                           submission.snapshots &&
@@ -437,20 +479,20 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                                         </div>
                                         <div className="snapshot-footer">
                                           <span className="snapshot-time">
-                                            🕐{" "} {formatDateTime(snapshot.createdAt,)}
+                                            🕐 {formatDateTime(snapshot.createdAt)}
                                           </span>
                                           <span className="snapshot-id">
-                                            ID:{" "} {snapshot.snapshotId.substring(0, 8)}...
+                                            ID: {snapshot.snapshotId.substring(0, 8)}...
                                           </span>
                                         </div>
                                       </div>
-                                    ),)}
+                                    ))}
                                   </div>
                                 </div>
                               </td>
                             </tr>
                           )}
-
+ 
                         {/* Answers Preview Row */}
                         {expandedAnswers === submission.submissionId && (
                           <tr className="answers-row">
@@ -470,7 +512,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                   </tbody>
                 </table>
               </div>
-
+ 
               {/* Summary Stats */}
               <div className="summary-stats">
                 <div className="stat-card">
@@ -512,14 +554,14 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                 <div className="stat-card">
                   <h3>Total Violations</h3>
                   <p className="stat-value">
-                    {submissions.reduce((sum, s) => sum + (s.violations || 0), 0,)}
+                    {submissions.reduce((sum, s) => sum + (s.violations || 0), 0)}
                   </p>
                 </div>
               </div>
             </>
           )}
         </div>
-        
+       
         {/* Snapshot Viewer Modal */}
         {showSnapshotViewer && selectedSubmission && (
           <SnapshotViewerModal
@@ -530,10 +572,17 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
             }}
           />
         )}
+ 
+        {/* Result Popup */}
+        <ResultPopup
+          isOpen={showResultPopup}
+          onClose={() => setShowResultPopup(false)}
+          result={resultData}
+        />
       </div>
     );
   }
-
+ 
   // If no examId, show all exams
   return (
     <div className="monitoring-dashboard">
@@ -543,7 +592,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
           ← Back to Create Exam
         </button>
       </div>
-
+ 
       {loading ? (
         <div className="loading">Loading exams...</div>
       ) : exams.length === 0 ? (
@@ -556,7 +605,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                 <h3>{exam.title}</h3>
                 {getStatusBadge(exam.status)}
               </div>
-
+ 
               <div className="exam-details">
                 <p>
                   <strong>Description:</strong> {exam.description}
@@ -574,7 +623,7 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                   <strong>ID:</strong> {exam.id}
                 </p>
               </div>
-
+ 
               <div className="exam-actions">
                 <button
                   className="btn-monitor"
@@ -596,5 +645,5 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
     </div>
   );
 }
-
+ 
 export default AdminMonitoringDashboard;

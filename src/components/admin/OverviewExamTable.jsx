@@ -5,6 +5,7 @@ import { getExams } from "../../api/examApi";
 import { jwtDecode } from "jwt-decode";
 import AddQuestionsModal from "./AddQuestionsModal";
 import AssignCandidatesModal from "./AssignCandidatesModal";
+import ExamAnalyticsPreview from "./ExamAnalyticsPreview";
 import "../../styles/ExamTable.css";
 
 function OverviewExamTable({ onSelectExam, selectedExamId }) {
@@ -17,7 +18,7 @@ function OverviewExamTable({ onSelectExam, selectedExamId }) {
 
   // Pagination and filter states
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
   const [totalPages, setTotalPages] = useState(0);
   const [totalExams, setTotalExams] = useState(0);
   const [searchTitle, setSearchTitle] = useState("");
@@ -155,11 +156,11 @@ function OverviewExamTable({ onSelectExam, selectedExamId }) {
     setCurrentPage(page);
   };
 
-  const handlePageSizeChange = (e) => {
-    const newSize = parseInt(e.target.value, 10);
-    setPageSize(newSize);
-    setCurrentPage(0); // Reset to first page when page size changes
-  };
+  // const handlePageSizeChange = (e) => {
+  //   const newSize = parseInt(e.target.value, 10);
+  //   setPageSize(newSize);
+  //   setCurrentPage(0); // Reset to first page when page size changes
+  // };
 
   const handleStatusFilterChange = (e) => {
     setStatusFilter(e.target.value);
@@ -236,7 +237,7 @@ function OverviewExamTable({ onSelectExam, selectedExamId }) {
            
           </select>
           
-          <select
+          {/* <select
             value={pageSize}
             onChange={handlePageSizeChange}
             className="page-size-select"
@@ -245,7 +246,7 @@ function OverviewExamTable({ onSelectExam, selectedExamId }) {
             <option value="10">10 per page</option>
             <option value="20">20 per page</option>
             <option value="50">50 per page</option>
-          </select>
+          </select> */}
           
           <button onClick={clearFilters} className="clear-filters-btn">
             Clear Filters
@@ -277,87 +278,95 @@ function OverviewExamTable({ onSelectExam, selectedExamId }) {
         </div>
       ) : (
         <>
-          <table className="exams-table">
-            <thead>
-              <tr>
-                <th>Exam Title</th>
-                <th>Status</th>
-                {/* <th>Stage</th> */}
-                {/* <th>Duration</th> */}
-                <th>Start Date</th>
-                {/* <th>End Date</th> */}
-                {/* <th>Actions</th> */}
-              </tr>
-            </thead>
-            <tbody>
-              {exams.map((exam) => (
-                <tr
-                    key={exam.id}
-                    className={`clickable-row ${selectedExamId === exam.id ? "selected-row" : ""}`}
-                    onClick={() => onSelectExam(exam.id)}
-                >
-                  <td className="exam-title">
-                    <strong>{exam.title || "Untitled Exam"}</strong>
-                    {exam.description && (
-                      <small className="exam-desc">{exam.description}</small>
-                    )}
-                    <small>ID: {exam.id}</small>
-                  </td>
-                  <td>{getStatusBadge(exam.status)}</td>
-                  {/* <td>
-                    <span className="exam-stage">{getExamStage(exam)}</span>
-                  </td> */}
-                  {/* <td>{exam.duration || 0} minutes</td> */}
-                  <td>{formatDateTime(exam.startDate)}</td>
-                  {/* <td>{formatDateTime(exam.endDate)}</td> */}
-                  {/* <td>
-                    <div className="action-buttons">{getExamActions(exam)}</div>
-                  </td> */}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="exam-stats-grid">
+            <div className="slot-card">
+              <table className="exams-table">
+                <thead>
+                  <tr>
+                    <th>Exam Title</th>
+                    <th>Status</th>
+                    {/* <th>Stage</th> */}
+                    {/* <th>Duration</th> */}
+                    <th>Start Date</th>
+                    {/* <th>End Date</th> */}
+                    {/* <th>Actions</th> */}
+                  </tr>
+                </thead>
+                <tbody>
+                  {exams.map((exam) => (
+                    <tr
+                        key={exam.id}
+                        className={`clickable-row ${selectedExamId === exam.id ? "selected-row" : ""}`}
+                        onClick={() => onSelectExam(exam.id)}
+                    >
+                      <td className="exam-title">
+                        <strong>{exam.title || "Untitled Exam"}</strong>
+                        {exam.description && (
+                          <small className="exam-desc">{exam.description}</small>
+                        )}
+                        <small>ID: {exam.id}</small>
+                      </td>
+                      <td>{getStatusBadge(exam.status)}</td>
+                      {/* <td>
+                        <span className="exam-stage">{getExamStage(exam)}</span>
+                      </td> */}
+                      {/* <td>{exam.duration || 0} minutes</td> */}
+                      <td>{formatDateTime(exam.startDate)}</td>
+                      {/* <td>{formatDateTime(exam.endDate)}</td> */}
+                      {/* <td>
+                        <div className="action-buttons">{getExamActions(exam)}</div>
+                      </td> */}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button
-                className="pagination-btn"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 0}
-              >
-                ← Previous
-              </button>
-              
-              <div className="page-numbers">
-                {getPageNumbers().map((pageNum) => (
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="pagination">
                   <button
-                    key={pageNum}
-                    className={`page-number ${currentPage === pageNum ? 'active' : ''}`}
-                    onClick={() => handlePageChange(pageNum)}
+                    className="pagination-btn"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 0}
                   >
-                    {pageNum + 1}
+                    ← Previous
                   </button>
-                ))}
-                
-                {totalPages > 5 && currentPage < totalPages - 3 && (
-                  <span className="ellipsis">...</span>
-                )}
-              </div>
-              
-              <button
-                className="pagination-btn"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage >= totalPages - 1}
-              >
-                Next →
-              </button>
-              
-              <div className="page-info">
-                Page {currentPage + 1} of {totalPages}
-              </div>
+                  
+                  <div className="page-numbers">
+                    {getPageNumbers().map((pageNum) => (
+                      <button
+                        key={pageNum}
+                        className={`page-number ${currentPage === pageNum ? 'active' : ''}`}
+                        onClick={() => handlePageChange(pageNum)}
+                      >
+                        {pageNum + 1}
+                      </button>
+                    ))}
+                    
+                    {totalPages > 5 && currentPage < totalPages - 3 && (
+                      <span className="ellipsis">...</span>
+                    )}
+                  </div>
+                  
+                  <button
+                    className="pagination-btn"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage >= totalPages - 1}
+                  >
+                    Next →
+                  </button>
+                  
+                  <div className="page-info">
+                    Page {currentPage + 1} of {totalPages}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            <div className="slot-card">
+              <ExamAnalyticsPreview examId={selectedExamId}/>
+            </div>
+          </div>
 
           <div className="table-footer">
             <p>Total Exams: {totalExams}</p>

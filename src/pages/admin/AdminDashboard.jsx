@@ -9,6 +9,7 @@ import InviteAdmin from "../../components/admin/InviteAdmin";
 import AdminMonitoringDashboard from "../../components/admin/AdminMonitoringDashboard";
 import ExamTable from "../../components/admin/ExamTable";
 import CreateExamWizard from "../../components/admin/CreateExamWizard";
+import BatchManagement from "../../components/admin/BatchManagement";
 
 import "../../styles/AdminDashboard.css";
 
@@ -84,14 +85,12 @@ function AdminDashboard() {
 
 
           {activeTab === "exams" && (
-          <>
-            <h1>Create New Exam</h1>
-            <CreateExamWizard />
-          </>
-        )}
+            <>
+              <h1>Create New Exam</h1>
+              <CreateExamWizard />
+            </>
+          )}
  
-
-          
 
           {activeTab === "allExams" && (
             <>
@@ -115,6 +114,13 @@ function AdminDashboard() {
               examId={selectedExamId}
               onBack={handleBackFromMonitoring}
             />
+          )}
+
+          {activeTab === "batches" && (
+            <>
+              {/* <h1>Create Candidate Batches</h1> */}
+              <BatchManagement />
+            </>
           )}
 
           {activeTab === "inviteAdmin" && (

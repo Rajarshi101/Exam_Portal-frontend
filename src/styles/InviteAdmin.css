@@ -40,7 +40,7 @@
 }
 
 .form-group label::after {
-  content: "*";
+  content: " *";
   color: #e74c3c;
   font-size: 16px;
 }

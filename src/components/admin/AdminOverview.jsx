@@ -1,6 +1,5 @@
 import { getExamStats, getCandidateStats } from "../../api/adminStatsApi";
 import OverviewExamTable from "./OverviewExamTable";
-import ExamAnalyticsPreview from "./ExamAnalyticsPreview";
 
 import { useEffect, useState } from "react";
 
@@ -71,7 +70,7 @@ function AdminOverview() {
   return (
     <div className="admin-overview-container">
 
-      <h1 className="dashboard-title">Dashboard Overview</h1>
+      {/* <h1 className="dashboard-title">Dashboard Overview</h1> */}
 
       {/* Top charts */}
       <div className="overview-charts">
@@ -107,7 +106,7 @@ function AdminOverview() {
             </BarChart>
           </ResponsiveContainer>
 
-          <p>Total Candidates: {candidateStats.total}</p>
+          <p>Total Invites: {candidateStats.total}</p>
         </div>
 
       </div>
@@ -117,22 +116,22 @@ function AdminOverview() {
 
         <h2>Exam Wise Statistics</h2>
 
-        <div className="exam-stats-grid">
+        {/* <div className="exam-stats-grid"> */}
 
           {/* SLOT 1 */}
-          <div className="slot-card">
+          {/* <div className="slot-card"> */}
             <OverviewExamTable
               onSelectExam={(examId)=>setSelectedExamId(examId)}
               selectedExamId={selectedExamId}
             />
-          </div>
+          {/* </div> */}
 
           {/* SLOT 2 */}
-          <div className="slot-card">
+          {/* <div className="slot-card">
             <ExamAnalyticsPreview examId={selectedExamId}/>
-          </div>
+          </div> */}
 
-        </div>
+        {/* </div> */}
 
       </div>
 
