@@ -238,9 +238,13 @@
 
 /* Update the action buttons for draft */
 .draft-actions {
+  /* display: flex;
+  flex-direction: column;
+  gap: 8px; */
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;  /* pushes top & bottom */
+  align-items: center;             /* centers horizontally */
 }
 
 .btn-action.btn-publish {

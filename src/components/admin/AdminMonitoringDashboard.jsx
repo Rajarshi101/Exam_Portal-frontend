@@ -146,8 +146,13 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
     }
   };
  
-  const formatDateTime = (dateTimeString) => {
+  const startformatDateTime = (dateTimeString) => {
     if (!dateTimeString) return "Not started";
+    return new Date(dateTimeString).toLocaleString();
+  };
+
+  const endformatDateTime = (dateTimeString) => {
+    if (!dateTimeString) return "Not submitted";
     return new Date(dateTimeString).toLocaleString();
   };
  
@@ -344,7 +349,11 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                       <>
                         <tr key={submission.submissionId}>
                           <td>{submission.candidateName || "N/A"}</td>
-                          <td>{submission.candidateEmail}</td>
+                          <td title={submission.candidateEmail}>
+                            <div className="scrollable-cell">
+                            {submission.candidateEmail}
+                            </div>
+                          </td>
                           <td>
                             {submission.completed ? (
                               <span className="status completed">
@@ -407,8 +416,8 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                               ? `${submission.timeTaken} min`
                               : "N/A"}
                           </td>
-                          <td>{formatDateTime(submission.startedAt)}</td>
-                          <td>{formatDateTime(submission.submittedAt)}</td>
+                          <td>{startformatDateTime(submission.startedAt)}</td>
+                          <td>{endformatDateTime(submission.submittedAt)}</td>
                           <td>
                             <div className="action-buttons">
                               {submission.snapshots && submission.snapshots.length > 0 ? (
@@ -419,9 +428,9 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                                 >
                                   {"View Snapshots: "}
                                   {submission.snapshots.length}
-                                  {submission.snapshots.filter(s => s.isViolate).length > 0 && (
+                                  {/* {submission.snapshots.filter(s => s.isViolate).length > 0 && (
                                     <span className="violation-indicator">⚠️</span>
-                                  )}
+                                  )} */}
                                 </button>
                               ) : (
                                 <span className="no-snapshots">No snapshots</span>
