@@ -20,6 +20,57 @@ function CandidateDashboard() {
     navigate(`/system-check/${id}`);
   };
 
+  useEffect(() => {
+    fetchExams();
+  }, []);
+
+  const fetchExams = async () => {
+    try {
+      setLoading(true);
+      const response = await getStudentExams({
+        page: 0,
+        size: 1000, // large number to get all exams
+      });
+
+      const examsData = response.data?.data || [];
+      setExams(examsData);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalExams = exams.length;
+
+  const upcomingCount = exams.filter(exam => {
+    const status = exam.status?.toUpperCase();
+    const inviteRemaining = exam.inviteRemaining;
+
+    return (
+      inviteRemaining !== "EXPIRED" &&
+      (status === "INVITED" || status === "PENDING" || status === "ONGOING")
+    );
+  }).length;
+
+  const completedCount = exams.filter(exam => {
+    const status = exam.status?.toUpperCase();
+
+    return status === "COMPLETED" || status === "SUBMITTED";
+  }).length;
+
+  const expiredCount = exams.filter(exam => {
+    const status = exam.status?.toUpperCase();
+    const inviteRemaining = exam.inviteRemaining;
+
+    return (
+      inviteRemaining === "EXPIRED" &&
+      status !== "COMPLETED" &&
+      status !== "SUBMITTED"
+    );
+  }).length;
+
   // useEffect(() => {
   //   fetchExams();
   // }, []);
@@ -115,21 +166,27 @@ function CandidateDashboard() {
       <CandidateSidebar setActiveTab={setActiveTab} />
 
       <div className="candidate-content">
-        {/* <div className="dashboard-header">
-          <h1>
-            {activeTab === "upcoming"
-              ? "Upcoming Exams"
-              : "Past Exams"}
-          </h1>
-          <button 
-            className="btn-refresh"
-            onClick={fetchExams}
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "↻ Refresh"}
-          </button>
-        </div> */}
-
+        {/* Stats Summary */}
+        {!loading && !error && (
+          <div className="exam-stats">
+            <div className="stat-card">
+              <h3>Total Exams</h3>
+              <p className="stat-value">{totalExams}</p>
+            </div>
+            <div className="stat-card">
+              <h3>Upcoming</h3>
+              <p className="stat-value">{upcomingCount}</p>
+            </div>
+            <div className="stat-card">
+              <h3>Completed</h3>
+              <p className="stat-value">{completedCount}</p>
+            </div>
+            <div className="stat-card">
+              <h3>Expired</h3>
+              <p className="stat-value">{expiredCount}</p>
+            </div>
+          </div>
+        )}
         {/* {error && (
           <div className="error-message">
             {error}
@@ -142,84 +199,12 @@ function CandidateDashboard() {
         //   <div className="loading">Loading exams...</div>
         // ) : 
         (
-          // <div className="exam-list">
-          //   {activeTab === "upcoming" ? (
-          //     upcomingExams.length > 0 ? (
-          //       upcomingExams.map((exam) => (
-          //         // <CandidateExamCard 
-          //         //   key={exam.examId} 
-          //         //   exam={{
-          //         //     id: exam.examId,
-          //         //     title: exam.title,
-          //         //     duration: `${exam.duration} minutes`,
-          //         //     status: formatStatus(exam.status),
-          //         //     expiresIn: formatInviteRemaining(exam.inviteRemaining),
-          //         //     buttonText: getButtonText(exam.status),
-          //         //     examData: exam
-          //         //   }}
-          //         //   isUpcoming={true}
-          //         // />
-          //         <CandidateExamTable
-          //           type="upcoming"
-          //           onStartExam={handleStartExam}
-          //         />
-          //       ))
-          //     ) : (
-          //       <div className="no-exams">
-          //         <p>No upcoming exams found.</p>
-          //         <p>All your exams will appear here when assigned.</p>
-          //       </div>
-          //     )
-          //   ) : (
-          //     completedExams.length > 0 ? (
-          //       completedExams.map((exam) => (
-          //         // <CandidateExamCard 
-          //         //   key={exam.examId} 
-          //         //   exam={{
-          //         //     id: exam.examId,
-          //         //     title: exam.title,
-          //         //     status: formatStatus(exam.status),
-          //         //     duration: `${exam.duration} minutes`,
-          //         //     examData: exam
-          //         //   }}
-          //         //   isUpcoming={false}
-          //         // />
-          //         <CandidateExamTable
-          //           type="past"
-          //         />
-          //       ))
-          //     ) : (
-          //       <div className="no-exams">
-          //         <p>No completed exams yet.</p>
-          //         <p>Your completed exams will appear here.</p>
-          //       </div>
-          //     )
-          //   )}
-          // </div>
           <div className="exam-list">
             <div style={{ display: activeTab === "upcoming" ? "block" : "none" }}>
               <CandidateExamTable type="upcoming" onStartExam={handleStartExam}/>
             </div>
             <div style={{ display: activeTab === "past" ? "block" : "none" }}>
               <CandidateExamTable type="past"/>
-            </div>
-          </div>
-        )}
-
-        {/* Stats Summary */}
-        {!loading && !error && (
-          <div className="exam-stats">
-            <div className="stat-card">
-              <h3>Total Exams</h3>
-              <p className="stat-value">{exams.length}</p>
-            </div>
-            <div className="stat-card">
-              <h3>Upcoming</h3>
-              <p className="stat-value">{upcomingExams.length}</p>
-            </div>
-            <div className="stat-card">
-              <h3>Completed</h3>
-              <p className="stat-value">{completedExams.length}</p>
             </div>
           </div>
         )}

@@ -1,0 +1,63 @@
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* 🔵 Invited */
+.status-badge.invited {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+/* 🟡 Pending */
+.status-badge.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* 🟢 Ongoing */
+.status-badge.ongoing {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+/* 🟣 Completed, Submitted */
+.status-badge.completed, .status-badge.submitted {
+  background-color: #ede7f6;
+  color: #5e35b1;
+}
+
+/* ⚫ Submitted */
+/* .status-badge.submitted {
+  background-color: #e0e0e0;
+  color: #424242;
+} */
+
+/* 🔘 Unknown */
+.status-badge.unknown {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.expire-badge {
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* 🔴 Expired */
+.expire-badge.expired {
+  background-color: #fdecea;
+  color: #d32f2f;
+}
+
+/* 🟢 Active */
+.expire-badge.active {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}

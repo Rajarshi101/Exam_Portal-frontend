@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { getStudentExams } from "../../api/candidateApi";
 
 import "../../styles/ExamTable.css";
+import "../../styles/CandidateExamTable.css";
 
 function CandidateExamTable({ type, onStartExam }) {
   const [exams, setExams] = useState([]);
@@ -58,6 +59,8 @@ function CandidateExamTable({ type, onStartExam }) {
       const response = await getStudentExams(params);
 
       let examsData = response.data.data || [];
+
+      examsData.sort((a, b) => b.examId - a.examId);
 
       // 🔥 APPLY FILTER HERE
       if (type === "upcoming") {
@@ -131,12 +134,23 @@ function CandidateExamTable({ type, onStartExam }) {
 
   const getStatusBadge = (status) => {
     const statusText = status || "UNKNOWN";
+
     switch (statusText.toUpperCase()) {
-      case "PUBLISHED":
-        return <span className="status-badge published">Published</span>;
-      case "DRAFT":
-        return <span className="status-badge draft">Draft</span>;
-    
+      case "INVITED":
+        return <span className="status-badge invited">Invited</span>;
+
+      case "PENDING":
+        return <span className="status-badge pending">Pending</span>;
+
+      case "ONGOING":
+        return <span className="status-badge ongoing">Ongoing</span>;
+
+      case "COMPLETED":
+        return <span className="status-badge completed">Completed</span>;
+
+      case "SUBMITTED":
+        return <span className="status-badge submitted">Submitted</span>;
+
       default:
         return <span className="status-badge unknown">{statusText}</span>;
     }
@@ -160,97 +174,97 @@ function CandidateExamTable({ type, onStartExam }) {
   //   fetchExams(); // Refresh exams after modal actions
   // };
 
-  const getExamActions = (exam) => {
-    const status = exam.status?.toUpperCase() || "DRAFT";
+  // const getExamActions = (exam) => {
+  //   const status = exam.status?.toUpperCase() || "DRAFT";
 
-    switch (status) {
-      case "DRAFT":
-        return (
-          <div className="draft-actions">
-            <button
-              className="btn-action btn-add-questions"
-              onClick={() => handleAddQuestions(exam)}
-            >
-              Add Questions
-            </button>
-            <button
-              className="btn-action btn-publish"
-              onClick={() => handlePublishExam(exam.id)}
-              disabled={publishing[exam.id]}
-            >
-              {publishing[exam.id] ? "Publishing..." : "Publish Exam"}
-            </button>
-          </div>
-        );
+  //   switch (status) {
+  //     case "DRAFT":
+  //       return (
+  //         <div className="draft-actions">
+  //           <button
+  //             className="btn-action btn-add-questions"
+  //             onClick={() => handleAddQuestions(exam)}
+  //           >
+  //             Add Questions
+  //           </button>
+  //           <button
+  //             className="btn-action btn-publish"
+  //             onClick={() => handlePublishExam(exam.id)}
+  //             disabled={publishing[exam.id]}
+  //           >
+  //             {publishing[exam.id] ? "Publishing..." : "Publish Exam"}
+  //           </button>
+  //         </div>
+  //       );
 
-      case "PUBLISHED":
-        if (hasExamStarted(exam)) {
-          return (
-            <button
-              className="btn-action btn-monitor"
-              onClick={() => onMonitorExam(exam.id)}
-            >
-              Monitor Exam
-            </button>
-          );
-        } else {
-          return (
-            <button
-              className="btn-action btn-assign-candidates"
-              onClick={() => handleAssignCandidates(exam)}
-            >
-              Assign Candidates
-            </button>
-          );
-        }
+  //     case "PUBLISHED":
+  //       if (hasExamStarted(exam)) {
+  //         return (
+  //           <button
+  //             className="btn-action btn-monitor"
+  //             onClick={() => onMonitorExam(exam.id)}
+  //           >
+  //             Monitor Exam
+  //           </button>
+  //         );
+  //       } else {
+  //         return (
+  //           <button
+  //             className="btn-action btn-assign-candidates"
+  //             onClick={() => handleAssignCandidates(exam)}
+  //           >
+  //             Assign Candidates
+  //           </button>
+  //         );
+  //       }
 
-      case "COMPLETED":
-        return (
-          <button
-            className="btn-action btn-view-results"
-            onClick={() => onMonitorExam(exam.id)}
-          >
-            View Results
-          </button>
-        );
+  //     case "COMPLETED":
+  //       return (
+  //         <button
+  //           className="btn-action btn-view-results"
+  //           onClick={() => onMonitorExam(exam.id)}
+  //         >
+  //           View Results
+  //         </button>
+  //       );
 
-      case "ACTIVE":
-        return (
-          <button
-            className="btn-action btn-monitor"
-            onClick={() => onMonitorExam(exam.id)}
-          >
-            Monitor Exam
-          </button>
-        );
+  //     case "ACTIVE":
+  //       return (
+  //         <button
+  //           className="btn-action btn-monitor"
+  //           onClick={() => onMonitorExam(exam.id)}
+  //         >
+  //           Monitor Exam
+  //         </button>
+  //       );
 
-      default:
-        return <span className="no-actions">No actions available</span>;
-    }
-  };
+  //     default:
+  //       return <span className="no-actions">No actions available</span>;
+  //   }
+  // };
 
-  const getExamStage = (exam) => {
-    const status = exam.status?.toUpperCase() || "DRAFT";
+  // const getExamStage = (exam) => {
+  //   const status = exam.status?.toUpperCase() || "DRAFT";
 
-    switch (status) {
-      case "DRAFT":
-        return "Add Questions & Publish";
+  //   switch (status) {
+  //     case "DRAFT":
+  //       return "Add Questions & Publish";
 
-      case "PUBLISHED":
-        return hasExamStarted(exam)
-          ? "Started - Monitor"
-          : "Ready - Assign Candidates";
+  //     case "PUBLISHED":
+  //       return hasExamStarted(exam)
+  //         ? "Started - Monitor"
+  //         : "Ready - Assign Candidates";
 
-      case "ACTIVE":
-        return "Active - Monitor";
+  //     case "ACTIVE":
+  //       return "Active - Monitor";
 
-      case "COMPLETED":
-        return "Completed - View Results";
+  //     case "COMPLETED":
+  //       return "Completed - View Results";
 
-      default:
-        return "Unknown";
-    }
-  };
+  //     default:
+  //       return "Unknown";
+  //   }
+  // };
 
   // Pagination handlers
   const handlePageChange = (page) => {
@@ -394,7 +408,7 @@ function CandidateExamTable({ type, onStartExam }) {
             </thead>
             <tbody>
               {exams.map((exam) => (
-                <tr key={exam.id}>
+                <tr key={exam.examId}>
                   <td className="exam-title">
                     <strong>{exam.title || "Untitled Exam"}</strong>
                     {/* {exam.description && (
@@ -404,10 +418,28 @@ function CandidateExamTable({ type, onStartExam }) {
                   </td>
                   <td>{exam.duration || 0} minutes</td>
                   <td>{getStatusBadge(exam.status)}</td>
-                  <td>{exam.inviteRemaining}</td>
+                  <td>
+                    <span
+                      className={
+                        exam.inviteRemaining === "EXPIRED"
+                          ? "expire-badge expired"
+                          : "expire-badge active"
+                      }
+                      title={
+                        exam.inviteRemaining === "EXPIRED"
+                          ? "Invitation time is over"
+                          : `Time remaining: ${exam.inviteRemaining}`
+                      }
+                    >
+                      {exam.inviteRemaining === "EXPIRED"
+                        ? "Time Over"
+                        : `⏳ ${exam.inviteRemaining}`
+                      }
+                    </span>
+                  </td>
                   <td>
                     {type === "upcoming" && (
-                      <button className="btn-action btn-monitor" onClick={() => onStartExam(exam.id)}>Start</button>
+                      <button className="btn-action btn-monitor" onClick={() => onStartExam(exam.examId)}>Start</button>
                     )}
                     {type === "past" && <span>--</span>}
                   </td>
