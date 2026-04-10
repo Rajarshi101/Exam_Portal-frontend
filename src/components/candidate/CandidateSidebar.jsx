@@ -43,7 +43,7 @@ function CandidateSidebar({ setActiveTab }) {
             transform:
               activeTab === "upcoming"
                 ? "translateY(0px)"
-                : activeTab === "completed"
+                : activeTab === "past"
                 ? "translateY(60px)"
                 : "translateY(0px)",
           }}
@@ -58,8 +58,8 @@ function CandidateSidebar({ setActiveTab }) {
         </button>
 
         <button
-          className={`nav-item ${activeTab === "completed" ? "active" : ""}`}
-          onClick={() => handleTabClick("completed")}
+          className={`nav-item ${activeTab === "past" ? "active" : ""}`}
+          onClick={() => handleTabClick("past")}
         >
           <i className="fas fa-history"></i>
           {!collapsed && <span>Past Exams</span>}

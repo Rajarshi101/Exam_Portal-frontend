@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import CandidateSidebar from "../../components/candidate/CandidateSidebar";
-import CandidateExamCard from "../../components/candidate/CandidateExamCard";
+// import CandidateExamCard from "../../components/candidate/CandidateExamCard";
+import CandidateExamTable from "../../components/candidate/CandidateExamTable";
+import { useNavigate } from "react-router-dom";
 import { getStudentExams } from "../../api/candidateApi";
 import "../../styles/CandidateDashboard.css";
 import Header from "../../components/Header";
@@ -12,49 +14,57 @@ function CandidateDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchExams();
-  }, []);
+  const navigate = useNavigate();
 
-  const fetchExams = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getStudentExams();
-      
-      // Ensure we have an array
-      const examsData = Array.isArray(response.data) ? response.data : [];
-      setExams(examsData);
-
-      console.log("Student Exams Response:", examsData);
-      
-    } catch (err) {
-      console.error("Error fetching student exams:", err);
-      setError("Failed to load exams. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const handleStartExam = (id) => {
+    navigate(`/system-check/${id}`);
   };
 
+  // useEffect(() => {
+  //   fetchExams();
+  // }, []);
+
+  // const fetchExams = async () => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
+  //     const response = await getStudentExams();
+      
+  //     // Ensure we have an array
+  //     // const examsData = Array.isArray(response.data) ? response.data : [];
+  //     // setExams(examsData);
+  //     const examsData = response.data?.data || [];
+  //     setExams(examsData);
+
+  //     console.log("Student Exams Response:", examsData);
+      
+  //   } catch (err) {
+  //     console.error("Error fetching student exams:", err);
+  //     setError("Failed to load exams. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   // Updated: Filter exams based on your API status values
-  const upcomingExams = exams.filter(exam => {
-    const status = exam.status?.toUpperCase();
-    const inviteRemaining = exam.inviteRemaining;
+  // const upcomingExams = exams.filter(exam => {
+  //   const status = exam.status?.toUpperCase();
+  //   const inviteRemaining = exam.inviteRemaining;
 
-    // If expired → NOT upcoming
-    if (inviteRemaining === "EXPIRED") {
-      return false;
-    }
-    // "INVITED" means the student has been invited but hasn't started
-    // "PENDING" means started but not completed
-    return status === "INVITED" || status === "PENDING" || status === "ONGOING";
-  });
+  //   // If expired → NOT upcoming
+  //   if (inviteRemaining === "EXPIRED") {
+  //     return false;
+  //   }
+  //   // "INVITED" means the student has been invited but hasn't started
+  //   // "PENDING" means started but not completed
+  //   return status === "INVITED" || status === "PENDING" || status === "ONGOING";
+  // });
 
-  const completedExams = exams.filter(exam => {
-    const status = exam.status?.toUpperCase();
-    const inviteRemaining = exam.inviteRemaining;
-    return status === "COMPLETED" || status === "SUBMITTED" || inviteRemaining === "EXPIRED";
-  });
+  // const completedExams = exams.filter(exam => {
+  //   const status = exam.status?.toUpperCase();
+  //   const inviteRemaining = exam.inviteRemaining;
+  //   return status === "COMPLETED" || status === "SUBMITTED" || inviteRemaining === "EXPIRED";
+  // });
 
   const formatInviteRemaining = (inviteRemaining) => {
     if (!inviteRemaining || inviteRemaining === "EXPIRED") {
@@ -105,7 +115,7 @@ function CandidateDashboard() {
       <CandidateSidebar setActiveTab={setActiveTab} />
 
       <div className="candidate-content">
-        <div className="dashboard-header">
+        {/* <div className="dashboard-header">
           <h1>
             {activeTab === "upcoming"
               ? "Upcoming Exams"
@@ -118,64 +128,81 @@ function CandidateDashboard() {
           >
             {loading ? "Loading..." : "↻ Refresh"}
           </button>
-        </div>
+        </div> */}
 
-        {error && (
+        {/* {error && (
           <div className="error-message">
             {error}
             <button onClick={fetchExams}>Try Again</button>
           </div>
-        )}
+        )} */}
 
-        {loading ? (
-          <div className="loading">Loading exams...</div>
-        ) : (
+        {
+        // loading ? (
+        //   <div className="loading">Loading exams...</div>
+        // ) : 
+        (
+          // <div className="exam-list">
+          //   {activeTab === "upcoming" ? (
+          //     upcomingExams.length > 0 ? (
+          //       upcomingExams.map((exam) => (
+          //         // <CandidateExamCard 
+          //         //   key={exam.examId} 
+          //         //   exam={{
+          //         //     id: exam.examId,
+          //         //     title: exam.title,
+          //         //     duration: `${exam.duration} minutes`,
+          //         //     status: formatStatus(exam.status),
+          //         //     expiresIn: formatInviteRemaining(exam.inviteRemaining),
+          //         //     buttonText: getButtonText(exam.status),
+          //         //     examData: exam
+          //         //   }}
+          //         //   isUpcoming={true}
+          //         // />
+          //         <CandidateExamTable
+          //           type="upcoming"
+          //           onStartExam={handleStartExam}
+          //         />
+          //       ))
+          //     ) : (
+          //       <div className="no-exams">
+          //         <p>No upcoming exams found.</p>
+          //         <p>All your exams will appear here when assigned.</p>
+          //       </div>
+          //     )
+          //   ) : (
+          //     completedExams.length > 0 ? (
+          //       completedExams.map((exam) => (
+          //         // <CandidateExamCard 
+          //         //   key={exam.examId} 
+          //         //   exam={{
+          //         //     id: exam.examId,
+          //         //     title: exam.title,
+          //         //     status: formatStatus(exam.status),
+          //         //     duration: `${exam.duration} minutes`,
+          //         //     examData: exam
+          //         //   }}
+          //         //   isUpcoming={false}
+          //         // />
+          //         <CandidateExamTable
+          //           type="past"
+          //         />
+          //       ))
+          //     ) : (
+          //       <div className="no-exams">
+          //         <p>No completed exams yet.</p>
+          //         <p>Your completed exams will appear here.</p>
+          //       </div>
+          //     )
+          //   )}
+          // </div>
           <div className="exam-list">
-            {activeTab === "upcoming" ? (
-              upcomingExams.length > 0 ? (
-                upcomingExams.map((exam) => (
-                  <CandidateExamCard 
-                    key={exam.examId} 
-                    exam={{
-                      id: exam.examId,
-                      title: exam.title,
-                      duration: `${exam.duration} minutes`,
-                      status: formatStatus(exam.status),
-                      expiresIn: formatInviteRemaining(exam.inviteRemaining),
-                      buttonText: getButtonText(exam.status),
-                      examData: exam
-                    }}
-                    isUpcoming={true}
-                  />
-                ))
-              ) : (
-                <div className="no-exams">
-                  <p>No upcoming exams found.</p>
-                  <p>All your exams will appear here when assigned.</p>
-                </div>
-              )
-            ) : (
-              completedExams.length > 0 ? (
-                completedExams.map((exam) => (
-                  <CandidateExamCard 
-                    key={exam.examId} 
-                    exam={{
-                      id: exam.examId,
-                      title: exam.title,
-                      status: formatStatus(exam.status),
-                      duration: `${exam.duration} minutes`,
-                      examData: exam
-                    }}
-                    isUpcoming={false}
-                  />
-                ))
-              ) : (
-                <div className="no-exams">
-                  <p>No completed exams yet.</p>
-                  <p>Your completed exams will appear here.</p>
-                </div>
-              )
-            )}
+            <div style={{ display: activeTab === "upcoming" ? "block" : "none" }}>
+              <CandidateExamTable type="upcoming" onStartExam={handleStartExam}/>
+            </div>
+            <div style={{ display: activeTab === "past" ? "block" : "none" }}>
+              <CandidateExamTable type="past"/>
+            </div>
           </div>
         )}
 

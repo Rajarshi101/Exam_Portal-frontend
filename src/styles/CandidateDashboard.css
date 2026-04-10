@@ -2,6 +2,7 @@
   display: flex;
   /* height: 100vh; */
   background-color: #f5f7fa;
+  font-family: 'Roboto Mono', monospace;
 }
 
 /* .candidate-dashboard {
@@ -27,9 +28,9 @@
 
 .exam-list {
   margin-top: 1.5rem;
-  display: grid;
+  /* display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  gap: 1.5rem; */
 }
 
 /* CandidateDashboard.css */

@@ -759,6 +759,7 @@ function BatchManagement() {
       {showCreateModal && (
         <div className="modal-overlay">
           <div className="modal-content">
+            <form onSubmit={handleCreateBatch}>
             <div className="modal-header">
               <h2>Create New Batch</h2>
               <button 
@@ -774,7 +775,6 @@ function BatchManagement() {
               </button>
             </div>
             <div className="modal-body">
-            <form onSubmit={handleCreateBatch}>
               <div className="form-group">
                 <label htmlFor="name">Batch Name </label>
                 <input
@@ -807,7 +807,7 @@ function BatchManagement() {
               {formSuccess && (
                 <div className="form-success">{formSuccess}</div>
               )}
-            </form>
+            
             </div>
             <div className="modal-footer">
                 <button 
@@ -826,6 +826,7 @@ function BatchManagement() {
                   Create Batch
                 </button>
             </div>
+            </form>
           </div>
         </div>
       )}

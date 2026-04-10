@@ -1,9 +1,14 @@
 /* Main Container */
 .batch-stats-view {
-  padding: 20px;
-  min-height: 100vh;
-  background: #f5f5f5;
+  /* padding: 20px; */
+  /* min-height: 100vh; */
+  /* background: #f5f5f5; */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow-x: auto;
 }
  
 /* Header */
@@ -73,8 +78,17 @@
 }
  
 .batch-list-header {
+  /* padding: 15px; */
+  /* border-bottom: 1px solid #e0e0e0; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
   padding: 15px;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+  border-radius: 8px;
 }
  
 .batch-list-header h3 {
@@ -84,19 +98,30 @@
 }
  
 .search-box {
+  /* position: relative; */
   position: relative;
+  flex: 1;
+  min-width: 250px;
 }
  
 .search-box input {
+  /* width: 100%; */
+  /* padding: 8px 30px 8px 10px; */
+  /* border: 1px solid #ddd; */
+  /* border-radius: 6px; */
+  /* font-size: 14px; */
+  /* .search-box .search-input { */
   width: 100%;
-  padding: 8px 30px 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  padding: 10px 15px 10px 40px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
   font-size: 14px;
+  transition: all 0.3s ease;
+/* } */
 }
  
 .clear-search {
-  position: absolute;
+  /* position: absolute;
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
@@ -104,7 +129,22 @@
   border: none;
   color: #999;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 16px; */
+
+  padding: 10px 15px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.batch-stats-grid {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr;
+  gap: 20px;
 }
  
 .batch-items {
@@ -149,24 +189,24 @@
 }
  
 /* Pagination */
-.pagination {
+/* .pagination {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 15px;
   border-top: 1px solid #e0e0e0;
-}
+} */
  
-.pagination button {
+/* .pagination button {
   padding: 5px 12px;
   background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
-}
+} */
  
-.pagination button:hover:not(:disabled) {
+/* .pagination button:hover:not(:disabled) {
   background: #6c63ff;
   color: white;
   border-color: #6c63ff;
@@ -175,7 +215,7 @@
 .pagination button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
+} */
  
 .total-batches {
   padding: 10px 15px;
@@ -183,6 +223,7 @@
   color: #999;
   text-align: center;
   border-top: 1px solid #e0e0e0;
+  margin-top: 20px;
 }
  
 /* Right Panel - Stats */

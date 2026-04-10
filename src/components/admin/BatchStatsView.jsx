@@ -224,262 +224,298 @@ function BatchStatsView({ selectedBatch, onBack }) {
   return (
     <div className="batch-stats-view">
       {/* Header */}
-      <div className="batch-stats-header">
+      {/* <div className="batch-stats-header">
         <button className="back-button" onClick={onBack}>← Back</button>
         <h2>Batch-wise Statistics</h2>
         {selectedBatchName && (
           <div className="selected-batch">Batch: <strong>{selectedBatchName}</strong></div>
         )}
-      </div>
+      </div> */}
  
-      <div className="batch-stats-content">
-        {/* Left Panel - Batch List */}
-        <div className="batch-list-panel">
-          <div className="batch-list-header">
-            <h3>Select Batch</h3>
-            <div className="search-box">
-              <input
-                type="text"
-                placeholder="Search batch..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm && (
-                <button className="clear-search" onClick={clearSearch}>×</button>
-              )}
-            </div>
+      {/* <div className="batch-stats-content"> */}
+        <div className="batch-list-header">
+          {/* <h3>Select Batch</h3> */}
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="Search batch..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <span className="search-icon">🔍</span>
+            {/* {searchTerm && (
+              
+            )} */}
           </div>
- 
-          <div className="batch-items">
-            {loading && batches.length === 0 ? (
-              <div className="loading-text">Loading...</div>
-            ) : (
-              batches.map(batch => (
-                <button
-                  key={batch.id}
-                  className={`batch-item ${selectedBatchId === batch.id ? "active" : ""}`}
-                  onClick={() => handleBatchSelect(batch.id)}
-                >
-                  <div className="batch-name">{batch.name}</div>
-                  <div className="batch-desc">{batch.description || "No description"}</div>
-                </button>
-              ))
-            )}
-            {batches.length === 0 && !loading && (
-              <div className="no-data-text">No batches found</div>
-            )}
+          <div className="filter-controls">
+            <button className="clear-search" onClick={clearSearch}>Clear Filters</button>
           </div>
- 
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button onClick={() => setCurrentPage(p => Math.max(0, p - 1))} disabled={currentPage === 0}>
-                Previous
-              </button>
-              <span>{currentPage + 1} / {totalPages}</span>
-              <button onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))} disabled={currentPage >= totalPages - 1}>
-                Next
-              </button>
-            </div>
-          )}
-          <div className="total-batches">Total: {totalBatches} batches</div>
         </div>
- 
-        {/* Right Panel - Statistics */}
-        <div className="stats-panel">
-          {!selectedBatchId ? (
-            <div className="empty-state">Select a batch to view statistics</div>
-          ) : loading ? (
-            <div className="empty-state">Loading statistics...</div>
-          ) : activeTab === "overview" ? (
-            <>
-              {batchStats && batchStats.length > 0 ? (
+        <div className="batch-stats-grid">
+          <div className="slot-card">
+            <table className="batch-table">
+              <thead>
+                <tr>
+                  <th>Batch Name</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {batches.map((batch) => (
+                    <tr
+                        key={batch.id}
+                        className={`clickable-row ${selectedBatchId === batch.id ? "selected-row" : ""}`}
+                        // className={`batch-item ${selectedBatchId === batch.id ? "active" : ""}`}
+                        // onClick={() => onSelectExam(exam.id)}
+                        onClick={() => handleBatchSelect(batch.id)}
+                    >
+                      <td className="batch-name">
+                        <strong>{batch.name || "Unnamed Batch"}</strong>
+                        {/* {exam.description && (
+                          <small className="exam-desc">{exam.description}</small>
+                        )}
+                        <small>ID: {exam.id}</small> */}
+                      </td>
+                      <td>{batch.description || "No description"}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+            {/* Left Panel - Batch List */}
+            {/* <div className="batch-list-panel">
+              <div className="batch-items">
+                {loading && batches.length === 0 ? (
+                  <div className="loading-text">Loading...</div>
+                ) : (
+                  batches.map(batch => (
+                    <button
+                      key={batch.id}
+                      className={`batch-item ${selectedBatchId === batch.id ? "active" : ""}`}
+                      onClick={() => handleBatchSelect(batch.id)}
+                    >
+                      <div className="batch-name">{batch.name}</div>
+                      <div className="batch-desc">{batch.description || "No description"}</div>
+                    </button>
+                  ))
+                )}
+                {batches.length === 0 && !loading && (
+                  <div className="no-data-text">No batches found</div>
+                )}
+              </div> */}
+    
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(0, p - 1))} disabled={currentPage === 0}>
+                    Previous
+                  </button>
+                  <span>{currentPage + 1} / {totalPages}</span>
+                  <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))} disabled={currentPage >= totalPages - 1}>
+                    Next
+                  </button>
+                </div>
+              )}
+              <div className="total-batches">Total: {totalBatches} batches</div>
+            {/* </div> */}
+          </div>
+          <div className="slot-card">
+            {/* Right Panel - Statistics */}
+            <div className="stats-panel">
+              {!selectedBatchId ? (
+                <div className="empty-state">Select a batch to view statistics</div>
+              ) : loading ? (
+                <div className="empty-state">Loading statistics...</div>
+              ) : activeTab === "overview" ? (
                 <>
-                  {/* Bar Chart */}
-                  <div className="chart-card">
-                    <h3>Exam-wise Student Distribution</h3>
-                    <div className="chart-container">
-                      <ResponsiveContainer width="100%" height={400}>
-                        <BarChart data={batchStats} margin={{ top: 20, right: 30, left: 40, bottom: 80 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis
-                            dataKey="examTitle"
-                            angle={-35}
-                            textAnchor="end"
-                            height={70}
-                            interval={0}
-                            tick={{ fontSize: 11 }}
-                          />
-                          <YAxis label={{ value: "Students", angle: -90, position: "insideLeft", offset: -5 }} />
-                          <Tooltip content={<BarTooltip />} />
-                          <Bar
-                            dataKey="totalStudents"
-                            fill="#6c63ff"
-                            onClick={(data) => handleExamClick(data.examId)}
-                            cursor="pointer"
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <p className="chart-hint">Click any bar for exam details</p>
-                  </div>
- 
-                  {/* Summary Stats */}
-                  <div className="summary-card">
-                    <h3>Summary</h3>
-                    <div className="summary-stats">
-                      <div className="summary-item">
-                        <span className="summary-label">Total Exams</span>
-                        <span className="summary-value">{batchStats.length}</span>
+                  {batchStats && batchStats.length > 0 ? (
+                    <>
+                      {/* Bar Chart */}
+                      <div className="chart-card">
+                        <h3>Exam-wise Student Distribution</h3>
+                        <div className="chart-container">
+                          <ResponsiveContainer width="100%" height={400}>
+                            <BarChart data={batchStats} margin={{ top: 20, right: 30, left: 40, bottom: 80 }}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis
+                                dataKey="examTitle"
+                                angle={-35}
+                                textAnchor="end"
+                                height={70}
+                                interval={0}
+                                tick={{ fontSize: 11 }}
+                              />
+                              <YAxis label={{ value: "Students", angle: -90, position: "insideLeft", offset: -5 }} />
+                              <Tooltip content={<BarTooltip />} />
+                              <Bar
+                                dataKey="totalStudents"
+                                fill="#6c63ff"
+                                onClick={(data) => handleExamClick(data.examId)}
+                                cursor="pointer"
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <p className="chart-hint">Click any bar for exam details</p>
                       </div>
-                      <div className="summary-item">
-                        <span className="summary-label">Total Students</span>
-                        <span className="summary-value">{batchTotalStudents}</span>
+    
+                      {/* Summary Stats */}
+                      <div className="summary-card">
+                        <h3>Summary</h3>
+                        <div className="summary-stats">
+                          <div className="summary-item">
+                            <span className="summary-label">Total Exams</span>
+                            <span className="summary-value">{batchStats.length}</span>
+                          </div>
+                          <div className="summary-item">
+                            <span className="summary-label">Total Students</span>
+                            <span className="summary-value">{batchTotalStudents}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    </>
+                  ) : (
+                    <div className="empty-state">No exam data available for this batch</div>
+                  )}
                 </>
               ) : (
-                <div className="empty-state">No exam data available for this batch</div>
-              )}
-            </>
-          ) : (
-            examDetails && (
-              <>
-                {/* Stats Cards */}
-                <div className="stats-cards">
-                  <div className="stat-card submissions">
-                    <div className="stat-icon">📊</div>
-                    <div className="stat-info">
-                      <div className="stat-label">Submissions</div>
-                      <div className="stat-number">{examDetails.submissions || 0}</div>
+                examDetails && (
+                  <>
+                    {/* Stats Cards */}
+                    <div className="stats-cards">
+                      <div className="stat-card submissions">
+                        <div className="stat-icon">📊</div>
+                        <div className="stat-info">
+                          <div className="stat-label">Submissions</div>
+                          <div className="stat-number">{examDetails.submissions || 0}</div>
+                        </div>
+                      </div>
+                      <div className="stat-card passed">
+                        <div className="stat-icon">✅</div>
+                        <div className="stat-info">
+                          <div className="stat-label">Passed</div>
+                          <div className="stat-number">{examDetails.qualified || 0}</div>
+                        </div>
+                      </div>
+                      <div className="stat-card failed">
+                        <div className="stat-icon">❌</div>
+                        <div className="stat-info">
+                          <div className="stat-label">Failed</div>
+                          <div className="stat-number">{examDetails.failed || 0}</div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="stat-card passed">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-info">
-                      <div className="stat-label">Passed</div>
-                      <div className="stat-number">{examDetails.qualified || 0}</div>
-                    </div>
-                  </div>
-                  <div className="stat-card failed">
-                    <div className="stat-icon">❌</div>
-                    <div className="stat-info">
-                      <div className="stat-label">Failed</div>
-                      <div className="stat-number">{examDetails.failed || 0}</div>
-                    </div>
-                  </div>
-                </div>
- 
-                {/* Pie Chart */}
-                <div className="chart-card">
-                  <h3>Candidate Status</h3>
-                  <div className="chart-container pie-wrapper">
-                    <ResponsiveContainer width="100%" height={350}>
-                      <PieChart>
-                        <Pie
-                          data={getPieData()}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={100}
-                          label={false}
-                        >
-                          {getPieData().map((entry, index) => (
-                            <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip content={<PieTooltip />} />
-                        <Legend
-                          verticalAlign="bottom"
-                          height={40}
-                          formatter={(value) => value}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
- 
-                {/* Score Distribution - Line Chart with Students on X-axis */}
-                {getScoreData().length > 0 && (
-                  <div className="chart-card">
-                    <h3>Score Distribution</h3>
-                    <div className="chart-container">
-                      <ResponsiveContainer width="100%" height={450}>
-                        <LineChart
-                          data={getScoreData()}
-                          margin={{ top: 20, right: 30, left: 40, bottom: 100 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis
-                            dataKey="email"
-                            angle={-45}
-                            textAnchor="end"
-                            height={90}
-                            interval={0}
-                            tick={{ fontSize: 11 }}
-                          />
-                          <YAxis
-                            label={{ value: "Score", angle: -90, position: "insideLeft", offset: -5 }}
-                            domain={[0, 'auto']}
-                          />
-                          <Tooltip content={<ScoreTooltip />} />
-                          <Legend verticalAlign="top" height={36} />
-                          <Line
-                            type="monotone"
-                            dataKey="marks"
-                            stroke="#6c63ff"
-                            strokeWidth={2}
-                            activeDot={{ r: 8 }}
-                            name="Student Score"
-                            dot={(props) => {
-                              const { cx, cy, payload } = props;
-                              const isPassed = examDetails?.cutoff && payload.marks >= examDetails.cutoff;
-                              return (
-                                <circle
-                                  cx={cx}
-                                  cy={cy}
-                                  r={6}
-                                  fill={isPassed ? "#52c41a" : "#ff4d4f"}
-                                  stroke="white"
-                                  strokeWidth={2}
-                                  cursor="pointer"
-                                />
-                              );
-                            }}
-                          />
-                          {examDetails?.cutoff && examDetails.cutoff > 0 && (
-                            <ReferenceLine
-                              y={examDetails.cutoff}
-                              stroke="#ff4d4f"
-                              strokeDasharray="5 5"
-                              strokeWidth={2}
-                              label={{
-                                value: `Cutoff: ${examDetails.cutoff}`,
-                                fill: "#ff4d4f",
-                                position: "right",
-                                fontSize: 12,
-                                fontWeight: "bold"
-                              }}
+    
+                    {/* Pie Chart */}
+                    <div className="chart-card">
+                      <h3>Candidate Status</h3>
+                      <div className="chart-container pie-wrapper">
+                        <ResponsiveContainer width="100%" height={350}>
+                          <PieChart>
+                            <Pie
+                              data={getPieData()}
+                              dataKey="value"
+                              nameKey="name"
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={100}
+                              label={false}
+                            >
+                              {getPieData().map((entry, index) => (
+                                <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip content={<PieTooltip />} />
+                            <Legend
+                              verticalAlign="bottom"
+                              height={40}
+                              formatter={(value) => value}
                             />
-                          )}
-                        </LineChart>
-                      </ResponsiveContainer>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
-                    <p className="chart-hint">
-                      💡 Green dots = Passed, Red dots = Failed | Hover on dots for details
-                    </p>
-                  </div>
-                )}
- 
-                <button className="back-to-overview" onClick={handleBackToOverview}>
-                  ← Back to Overview
-                </button>
-              </>
-            )
-          )}
+    
+                    {/* Score Distribution - Line Chart with Students on X-axis */}
+                    {getScoreData().length > 0 && (
+                      <div className="chart-card">
+                        <h3>Score Distribution</h3>
+                        <div className="chart-container">
+                          <ResponsiveContainer width="100%" height={450}>
+                            <LineChart
+                              data={getScoreData()}
+                              margin={{ top: 20, right: 30, left: 40, bottom: 100 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis
+                                dataKey="email"
+                                angle={-45}
+                                textAnchor="end"
+                                height={90}
+                                interval={0}
+                                tick={{ fontSize: 11 }}
+                              />
+                              <YAxis
+                                label={{ value: "Score", angle: -90, position: "insideLeft", offset: -5 }}
+                                domain={[0, 'auto']}
+                              />
+                              <Tooltip content={<ScoreTooltip />} />
+                              <Legend verticalAlign="top" height={36} />
+                              <Line
+                                type="monotone"
+                                dataKey="marks"
+                                stroke="#6c63ff"
+                                strokeWidth={2}
+                                activeDot={{ r: 8 }}
+                                name="Student Score"
+                                dot={(props) => {
+                                  const { cx, cy, payload } = props;
+                                  const isPassed = examDetails?.cutoff && payload.marks >= examDetails.cutoff;
+                                  return (
+                                    <circle
+                                      cx={cx}
+                                      cy={cy}
+                                      r={6}
+                                      fill={isPassed ? "#52c41a" : "#ff4d4f"}
+                                      stroke="white"
+                                      strokeWidth={2}
+                                      cursor="pointer"
+                                    />
+                                  );
+                                }}
+                              />
+                              {examDetails?.cutoff && examDetails.cutoff > 0 && (
+                                <ReferenceLine
+                                  y={examDetails.cutoff}
+                                  stroke="#ff4d4f"
+                                  strokeDasharray="5 5"
+                                  strokeWidth={2}
+                                  label={{
+                                    value: `Cutoff: ${examDetails.cutoff}`,
+                                    fill: "#ff4d4f",
+                                    position: "right",
+                                    fontSize: 12,
+                                    fontWeight: "bold"
+                                  }}
+                                />
+                              )}
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <p className="chart-hint">
+                          💡 Green dots = Passed, Red dots = Failed | Hover on dots for details
+                        </p>
+                      </div>
+                    )}
+    
+                    <button className="back-to-overview" onClick={handleBackToOverview}>
+                      ← Back to Overview
+                    </button>
+                  </>
+                )
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      {/* </div> */}
     </div>
   );
 }

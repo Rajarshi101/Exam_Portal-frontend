@@ -25,6 +25,7 @@ const COLORS = ["#6c63ff", "#ff7a45"];
 function AdminOverview() {
   const [examStats, setExamStats] = useState(null);
   const [candidateStats, setCandidateStats] = useState(null);
+  const [activeSection, setActiveSection] = useState(null);
   const [selectedExamId, setSelectedExamId] = useState(null);
   const [showBatchStats, setShowBatchStats] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState(null);
@@ -77,28 +78,29 @@ function AdminOverview() {
     { name: "Completed", value: candidateStats.completed },
     { name: "Expired", value: candidateStats.expired }
   ];
+
+  const toggleSection = (section) => {
+    setActiveSection((prev) => (prev === section ? null : section));
+  };
  
   // If showing batch stats, render the BatchStatsView component
-  if (showBatchStats) {
-    return (
-      <BatchStatsView
-        selectedBatch={selectedBatch}
-        onBack={handleBackToDashboard}
-      />
-    );
-  }
+  // if (showBatchStats) {
+  //   return (
+      
+  //   );
+  // }
  
   return (
     <div className="admin-overview-container">
       {/* Add Batch Stats Button */}
-      <div className="dashboard-header">
+      {/* <div className="dashboard-header">
         <button
           className="batch-stats-button"
           onClick={handleBatchStatsClick}
         >
           📊 Batch-wise Statistics
         </button>
-      </div>
+      </div> */}
  
       {/* Top charts */}
       <div className="overview-charts">
@@ -132,14 +134,55 @@ function AdminOverview() {
           <p>Total Invites: {candidateStats.total}</p>
         </div>
       </div>
- 
-      {/* Exam wise stats */}
-      <div className="exam-wise-stats">
-        <h2>Exam Wise Statistics</h2>
-        <OverviewExamTable
-          onSelectExam={(examId)=>setSelectedExamId(examId)}
-          selectedExamId={selectedExamId}
-        />
+
+      <div className="stats-container">
+
+        {/* Exam-wise Section */}
+        <div className="stats-section">
+          <div
+            className="stats-header"
+            onClick={() => toggleSection("exam")}
+          >
+            {/* <h3>Exam-wise Statistics</h3> */}
+            <h2>Exam Wise Statistics</h2>
+            <span>{activeSection === "exam" ? "▲" : "▼"}</span>
+          </div>
+
+          {activeSection === "exam" && (
+            <div className="stats-content">
+              {/* Your existing Exam-wise stats JSX here */}
+              {/* Exam wise stats */}
+              {/* <div className="exam-wise-stats"> */}
+                <OverviewExamTable
+                  onSelectExam={(examId)=>setSelectedExamId(examId)}
+                  selectedExamId={selectedExamId}
+                />
+              {/* </div> */}
+            </div>
+          )}
+        </div>
+
+        {/* Batch-wise Section */}
+        <div className="stats-section">
+          <div
+            className="stats-header"
+            onClick={() => toggleSection("batch")}
+          >
+            <h2>Batch-wise Statistics</h2>
+            <span>{activeSection === "batch" ? "▲" : "▼"}</span>
+          </div>
+
+          {activeSection === "batch" && (
+            <div className="stats-content">
+              {/* Your existing Batch-wise stats JSX here */}
+              <BatchStatsView
+                selectedBatch={selectedBatch}
+                onBack={handleBackToDashboard}
+              />
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

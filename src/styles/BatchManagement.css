@@ -212,6 +212,10 @@
   color: #333;
 }
 
+.modal-footer {
+  border-radius: 0;
+}
+
 /* Form Styles */
 /* .form-group {
   padding: 20px 20px 10px;
@@ -713,7 +717,7 @@
 } */
 
 /* Student Count Badge */
-.count-badge {
+/* .count-badge {
   display: inline-block;
   padding: 5px 12px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -723,6 +727,21 @@
   font-weight: 600;
   text-align: center;
   min-width: 40px;
+} */
+
+.count-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  min-width: 40px;
+  color: black;
+  background: 
+    linear-gradient(white, white) padding-box,
+    linear-gradient(135deg, #fd324a, #764ba2) border-box;
+  border: 2px solid transparent;
 }
 
 /* Action Buttons */

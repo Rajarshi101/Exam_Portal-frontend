@@ -1,8 +1,12 @@
 // api/candidateApi.js
 import api from "./api";
 
-export const getStudentExams = () =>
-  api.get("/api/student/exams");
+// export const getStudentExams = () =>
+//   api.get("/api/student/exams");
+
+export const getStudentExams = (params) => {
+  return api.get("/api/student/exams", { params });
+};
 
 export const startExamSession = (examId, imageFile) => {
   const formData = new FormData();
