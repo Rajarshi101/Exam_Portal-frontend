@@ -145,21 +145,29 @@ function AdminOverview() {
           >
             {/* <h3>Exam-wise Statistics</h3> */}
             <h2>Exam Wise Statistics</h2>
-            <span>{activeSection === "exam" ? "▲" : "▼"}</span>
+            <span className="dropdown-icon">{activeSection === "exam" ? <i className="fas fa-circle-chevron-up" /> : <i className="fas fa-circle-chevron-down" />}</span>
           </div>
 
-          {activeSection === "exam" && (
-            <div className="stats-content">
+          <div className={`stats-content ${activeSection === "exam" ? "open" : ""}`}>
+            {/* Exam-wise statistics content */}
+            <OverviewExamTable
+              onSelectExam={(examId)=>setSelectedExamId(examId)}
+              selectedExamId={selectedExamId}
+            />
+          </div>
+
+          {/* {activeSection === "exam" && (
+            <div className="stats-content"> */}
               {/* Your existing Exam-wise stats JSX here */}
               {/* Exam wise stats */}
               {/* <div className="exam-wise-stats"> */}
-                <OverviewExamTable
+                {/* <OverviewExamTable
                   onSelectExam={(examId)=>setSelectedExamId(examId)}
                   selectedExamId={selectedExamId}
-                />
+                /> */}
               {/* </div> */}
-            </div>
-          )}
+            {/* </div>
+          )} */}
         </div>
 
         {/* Batch-wise Section */}
@@ -169,18 +177,26 @@ function AdminOverview() {
             onClick={() => toggleSection("batch")}
           >
             <h2>Batch-wise Statistics</h2>
-            <span>{activeSection === "batch" ? "▲" : "▼"}</span>
+            <span className="dropdown-icon">{activeSection === "batch" ? <i className="fas fa-circle-chevron-up" /> : <i className="fas fa-circle-chevron-down" />}</span>
           </div>
 
-          {activeSection === "batch" && (
-            <div className="stats-content">
+          <div className={`stats-content ${activeSection === "batch" ? "open" : ""}`}>
+            {/* Exam-wise statistics content */}
+            <BatchStatsView
+              selectedBatch={selectedBatch}
+              onBack={handleBackToDashboard}
+            />
+          </div>
+
+          {/* {activeSection === "batch" && (
+            <div className="stats-content"> */}
               {/* Your existing Batch-wise stats JSX here */}
-              <BatchStatsView
+              {/* <BatchStatsView
                 selectedBatch={selectedBatch}
                 onBack={handleBackToDashboard}
               />
             </div>
-          )}
+          )} */}
         </div>
 
       </div>

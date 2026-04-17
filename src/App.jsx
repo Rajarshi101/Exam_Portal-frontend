@@ -26,7 +26,7 @@ function App() {
   element={<FirstLoginChangePassword />}
 />
 
-<Route path="/invite/verify" element={<InviteVerify />} />
+{/* <Route path="/invite/verify" element={<InviteVerify />} /> */}
 
 
  <Route path="/candidate-dashboard" element={<CandidateDashboard />} />

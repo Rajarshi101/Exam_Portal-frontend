@@ -103,6 +103,10 @@
   font-weight: 400;
 }
 
+.login-box .subtitle {
+  margin: 0  0 1rem;
+}
+
 .login-box input {
   width: 94%;
   padding: 10px;

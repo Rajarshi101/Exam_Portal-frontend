@@ -27,6 +27,7 @@ function BatchStatsView({ selectedBatch, onBack }) {
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [selectedBatchName, setSelectedBatchName] = useState("");
   const [batchStats, setBatchStats] = useState(null);
+  const [selectedExamTitle, setSelectedExamTitle] = useState("");
   const [examDetails, setExamDetails] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [searchTerm, setSearchTerm] = useState("");
@@ -110,10 +111,12 @@ function BatchStatsView({ selectedBatch, onBack }) {
     }
   };
  
-  const handleExamClick = async (examId) => {
+  const handleExamClick = async (examData) => {
     try {
       setLoading(true);
-      const details = await getExamBatchDetails(examId, selectedBatchId);
+      setSelectedExamTitle(examData.examTitle);
+      const details = await getExamBatchDetails(examData.examId, selectedBatchId);
+      console.log("Exam Details:", details);
       setExamDetails(details);
       setActiveTab("exam-details");
     } catch (error) {
@@ -319,7 +322,7 @@ function BatchStatsView({ selectedBatch, onBack }) {
           </div>
           <div className="slot-card">
             {/* Right Panel - Statistics */}
-            <div className="stats-panel">
+            {/* <div className="stats-panel"> */}
               {!selectedBatchId ? (
                 <div className="empty-state">Select a batch to view statistics</div>
               ) : loading ? (
@@ -328,6 +331,18 @@ function BatchStatsView({ selectedBatch, onBack }) {
                 <>
                   {batchStats && batchStats.length > 0 ? (
                     <>
+                      {/* Summary Stats */}
+                      <div className="summary-card">
+                          <div className="stat-box">
+                            <h4>Total Exams</h4>
+                            <p>{batchStats.length}</p>
+                          </div>
+                          <div className="stat-box">
+                            <h4>Total Students</h4>
+                            <p>{batchTotalStudents}</p>
+                          </div>
+                      </div>
+
                       {/* Bar Chart */}
                       <div className="chart-card">
                         <h3>Exam-wise Student Distribution</h3>
@@ -343,33 +358,18 @@ function BatchStatsView({ selectedBatch, onBack }) {
                                 interval={0}
                                 tick={{ fontSize: 11 }}
                               />
-                              <YAxis label={{ value: "Students", angle: -90, position: "insideLeft", offset: -5 }} />
+                              <YAxis label={{ value: "Students", angle: -90, position: "insideLeft", offset: -5 }}/>
                               <Tooltip content={<BarTooltip />} />
                               <Bar
                                 dataKey="totalStudents"
                                 fill="#6c63ff"
-                                onClick={(data) => handleExamClick(data.examId)}
+                                onClick={(data) => handleExamClick(data)}
                                 cursor="pointer"
                               />
                             </BarChart>
                           </ResponsiveContainer>
                         </div>
                         <p className="chart-hint">Click any bar for exam details</p>
-                      </div>
-    
-                      {/* Summary Stats */}
-                      <div className="summary-card">
-                        <h3>Summary</h3>
-                        <div className="summary-stats">
-                          <div className="summary-item">
-                            <span className="summary-label">Total Exams</span>
-                            <span className="summary-value">{batchStats.length}</span>
-                          </div>
-                          <div className="summary-item">
-                            <span className="summary-label">Total Students</span>
-                            <span className="summary-value">{batchTotalStudents}</span>
-                          </div>
-                        </div>
                       </div>
                     </>
                   ) : (
@@ -379,36 +379,18 @@ function BatchStatsView({ selectedBatch, onBack }) {
               ) : (
                 examDetails && (
                   <>
-                    {/* Stats Cards */}
-                    <div className="stats-cards">
-                      <div className="stat-card submissions">
-                        <div className="stat-icon">📊</div>
-                        <div className="stat-info">
-                          <div className="stat-label">Submissions</div>
-                          <div className="stat-number">{examDetails.submissions || 0}</div>
-                        </div>
-                      </div>
-                      <div className="stat-card passed">
-                        <div className="stat-icon">✅</div>
-                        <div className="stat-info">
-                          <div className="stat-label">Passed</div>
-                          <div className="stat-number">{examDetails.qualified || 0}</div>
-                        </div>
-                      </div>
-                      <div className="stat-card failed">
-                        <div className="stat-icon">❌</div>
-                        <div className="stat-info">
-                          <div className="stat-label">Failed</div>
-                          <div className="stat-number">{examDetails.failed || 0}</div>
-                        </div>
-                      </div>
+                    <div className="stat-header">
+                      <h3 className="selected-exam-title">Exam Title: {selectedExamTitle}</h3>
+                      <button className="back-to-overview" onClick={handleBackToOverview}>
+                      ← Back to Overview
+                    </button>
                     </div>
-    
                     {/* Pie Chart */}
-                    <div className="chart-card">
+                    <div className="chart-card batch">
                       <h3>Candidate Status</h3>
+                      <div className="chart-card-slots">
                       <div className="chart-container pie-wrapper">
-                        <ResponsiveContainer width="100%" height={350}>
+                        <ResponsiveContainer width="100%" height={300}>
                           <PieChart>
                             <Pie
                               data={getPieData()}
@@ -431,6 +413,32 @@ function BatchStatsView({ selectedBatch, onBack }) {
                             />
                           </PieChart>
                         </ResponsiveContainer>
+                      </div>
+
+                      {/* Stats Cards */}
+                      <div className="summary-card batch">
+                        {/* <div className="stat-card submissions"> */}
+                          {/* <div className="stat-icon">📊</div> */}
+                          <div className="stat-box submission">
+                            <h4>Submissions</h4>
+                            <p>{examDetails.submissions || 0}</p>
+                          </div>
+                        {/* </div> */}
+                        {/* <div className="stat-card passed"> */}
+                          {/* <div className="stat-icon">✅</div> */}
+                          <div className="stat-box passed">
+                            <h4>Passed</h4>
+                            <p>{examDetails.qualified || 0}</p>
+                          </div>
+                        {/* </div> */}
+                        {/* <div className="stat-card failed"> */}
+                          {/* <div className="stat-icon">❌</div> */}
+                          <div className="stat-box failed">
+                            <h4>Failed</h4>
+                            <p>{examDetails.failed || 0}</p>
+                          </div>
+                        {/* </div> */}
+                      </div>
                       </div>
                     </div>
     
@@ -505,14 +513,10 @@ function BatchStatsView({ selectedBatch, onBack }) {
                         </p>
                       </div>
                     )}
-    
-                    <button className="back-to-overview" onClick={handleBackToOverview}>
-                      ← Back to Overview
-                    </button>
                   </>
                 )
               )}
-            </div>
+            {/* </div> */}
           </div>
         </div>
       {/* </div> */}
