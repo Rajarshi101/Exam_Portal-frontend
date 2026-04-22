@@ -71,6 +71,10 @@
   margin-bottom: 0.4rem;
 }
 
+.wizard-step .checkbox-label {
+  display: flex;
+}
+
 /* .wizard-step input,
 .wizard-step textarea {
   width: 100%;

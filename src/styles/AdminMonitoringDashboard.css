@@ -916,7 +916,7 @@
 /* Fix for stat cards in monitoring view */
 .submissions-container .summary-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 20px;
   margin-top: 30px;
   margin-bottom: 20px;
@@ -1112,3 +1112,9 @@ td .btn-action {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.stat-card:nth-child(1) { border-top: 4px solid #3498db; }
+.stat-card:nth-child(2) { border-top: 4px solid #2ecc71; }
+.stat-card:nth-child(3) { border-top: 4px solid #f1c40f; }
+.stat-card:nth-child(4) { border-top: 4px solid #e74c3c; }
+.stat-card:nth-child(5) { border-top: 4px solid #9834db; }

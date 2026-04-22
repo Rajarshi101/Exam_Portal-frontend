@@ -544,6 +544,12 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                   </p>
                 </div>
                 <div className="stat-card">
+                  <h3>Total Violations</h3>
+                  <p className="stat-value">
+                    {submissions.reduce((sum, s) => sum + (s.violations || 0), 0)}
+                  </p>
+                </div>
+                <div className="stat-card">
                   <h3>Average Score</h3>
                   <p className="stat-value">
                     {(() => {
@@ -558,12 +564,6 @@ function AdminMonitoringDashboard({ examId, onMonitorExam, onBack }) {
                         ) / completedSubmissions.length;
                       return avg.toFixed(2) + "%";
                     })()}
-                  </p>
-                </div>
-                <div className="stat-card">
-                  <h3>Total Violations</h3>
-                  <p className="stat-value">
-                    {submissions.reduce((sum, s) => sum + (s.violations || 0), 0)}
                   </p>
                 </div>
               </div>

@@ -359,7 +359,7 @@
 
 .batch-search-input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 15px 10px 40px !important;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-size: 14px;
@@ -461,15 +461,27 @@
   margin-bottom: 15px;
 }
 
+.students-header.batch-modal {
+  display: block;
+  margin: 0;
+}
+
 .students-header h4 {
   color: #333;
   font-size: 16px;
   margin: 0;
 }
 
+.student-header-action {
+   display: flex;
+   justify-content: space-between;
+   margin: 10px 0;
+}
+
 .student-selection-actions {
   display: flex;
   gap: 8px;
+  padding: 5px 0;
 }
 
 .small-btn {

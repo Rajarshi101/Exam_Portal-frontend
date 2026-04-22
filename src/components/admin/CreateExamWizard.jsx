@@ -42,45 +42,128 @@ function CreateExamWizard() {
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [batchSearchTerm, setBatchSearchTerm] = useState("");
   const [showBatchDropdown, setShowBatchDropdown] = useState(false);
-  const [batchStudents, setBatchStudents] = useState([]);
+  // const [batchStudents, setBatchStudents] = useState([]);
+  const [batchPage, setBatchPage] = useState(0);
+  const [batchTotalPages, setBatchTotalPages] = useState(1);
+  const [batchTotal, setBatchTotal] = useState(0);
+  const [studentPage, setStudentPage] = useState(0);
+  const [studentTotalPages, setStudentTotalPages] = useState(1);
+  const [studentTotal, setStudentTotal] = useState(0);
+  const [studentSearchTerm, setStudentSearchTerm] = useState("");
+
   const [loadingBatches, setLoadingBatches] = useState(false);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [selectedBatchCandidates, setSelectedBatchCandidates] = useState([]);
 
   // Fetch all batches on component mount
   useEffect(() => {
-    fetchBatches();
+    fetchBatches("", 0);
   }, []);
 
-  const fetchBatches = async () => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchBatches(batchSearchTerm, 0);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [batchSearchTerm]);
+
+  // const fetchBatches = async () => {
+  //   try {
+  //     setLoadingBatches(true);
+  //     const response = await batchApi.getAllBatches();
+  //     setBatches(response.data || []);
+  //   } catch (err) {
+  //     console.error("Error fetching batches:", err);
+  //   } finally {
+  //     setLoadingBatches(false);
+  //   }
+  // };
+
+  const fetchBatches = async (search = "", page = 0) => {
     try {
       setLoadingBatches(true);
-      const response = await batchApi.getAllBatches();
-      setBatches(response.data || []);
+
+      const response = await batchApi.getAllBatches({
+        page,
+        name: search || undefined,
+      });
+
+      if (response && response.data && Array.isArray(response.data)) {
+        if (page > 0) {
+          setBatches(prev => [...prev, ...response.data]);
+        } else {
+          setBatches(response.data);
+        }
+
+        setBatchPage(response.page || 0);
+        setBatchTotalPages(response.totalPages || 1);
+        setBatchTotal(response.total || 0);
+      } else {
+        setBatches([]);
+      }
     } catch (err) {
       console.error("Error fetching batches:", err);
+      setBatches([]);
     } finally {
       setLoadingBatches(false);
     }
   };
 
-  const fetchBatchStudents = async (batchId) => {
+  // const fetchBatchStudents = async (batchId) => {
+  //   try {
+  //     setLoadingStudents(true);
+  //     const response = await studentApi.getStudentsByBatch(batchId);
+  //     const data = response.data || [];
+  //     setBatchStudents(data);
+      
+  //     // Format students for display
+  //     const formattedStudents = data.map(student => ({
+  //       id: student.id,
+  //       name: student.name,
+  //       email: student.email,
+  //       selected: false
+  //     }));
+  //     setSelectedBatchCandidates(formattedStudents);
+  //   } catch (err) {
+  //     console.error("Error fetching batch students:", err);
+  //   } finally {
+  //     setLoadingStudents(false);
+  //   }
+  // };
+
+  const fetchBatchStudents = async (batchId, search = "", page = 0) => {
     try {
       setLoadingStudents(true);
-      const response = await studentApi.getStudentsByBatch(batchId);
-      const data = response.data || [];
-      setBatchStudents(data);
-      
-      // Format students for display
-      const formattedStudents = data.map(student => ({
-        id: student.id,
-        name: student.name,
-        email: student.email,
-        selected: false
-      }));
-      setSelectedBatchCandidates(formattedStudents);
+
+      const response = await studentApi.getStudentsByBatch(batchId, {
+        page,
+        search: search || undefined,
+      });
+
+      if (response && response.data && Array.isArray(response.data)) {
+        const formattedStudents = response.data.map(student => ({
+          id: student.id,
+          name: student.name,
+          email: student.email,
+          selected: false,
+        }));
+
+        if (page > 0) {
+          setSelectedBatchCandidates(prev => [...prev, ...formattedStudents]);
+        } else {
+          setSelectedBatchCandidates(formattedStudents);
+        }
+
+        setStudentPage(response.page || 0);
+        setStudentTotalPages(response.totalPages || 1);
+        setStudentTotal(response.total || 0);
+      } else {
+        setSelectedBatchCandidates([]);
+      }
     } catch (err) {
-      console.error("Error fetching batch students:", err);
+      console.error("Error fetching students:", err);
+      setSelectedBatchCandidates([]);
     } finally {
       setLoadingStudents(false);
     }
@@ -89,13 +172,14 @@ function CreateExamWizard() {
   const handleBatchSelect = (batch) => {
     setSelectedBatch(batch);
     setBatchSearchTerm(batch.name);
+    setStudentSearchTerm("");
     setShowBatchDropdown(false);
-    fetchBatchStudents(batch.id);
+    fetchBatchStudents(batch.id, "", 0);
   };
 
-  const filteredBatches = batches.filter(batch =>
-    batch.name.toLowerCase().includes(batchSearchTerm.toLowerCase())
-  );
+  // const filteredBatches = batches.filter(batch =>
+  //   batch.name.toLowerCase().includes(batchSearchTerm.toLowerCase())
+  // );
 
   const toggleStudentSelection = (index) => {
     const updated = [...selectedBatchCandidates];
@@ -306,6 +390,21 @@ function CreateExamWizard() {
       setBulkCandidates(parsed);
     };
     reader.readAsText(file);
+  };
+
+  const handleStudentSearch = (e) => {
+    const search = e.target.value;
+    setStudentSearchTerm(search);
+
+    if (window.studentSearchTimer) {
+      clearTimeout(window.studentSearchTimer);
+    }
+
+    window.studentSearchTimer = setTimeout(() => {
+      if (selectedBatch) {
+        fetchBatchStudents(selectedBatch.id, search, 0);
+      }
+    }, 400);
   };
 
   const finishCreatingExam = async () => {
@@ -754,22 +853,34 @@ function CreateExamWizard() {
                     onFocus={() => setShowBatchDropdown(true)}
                     className="batch-search-input"
                   />
+                  <span className="search-icon">🔍</span>
                   {loadingBatches && <span className="search-spinner">⏳</span>}
                 </div>
 
-                {showBatchDropdown && batchSearchTerm && (
+                {showBatchDropdown && (
                   <div className="batch-dropdown">
-                    {filteredBatches.length > 0 ? (
-                      filteredBatches.map(batch => (
-                        <div
-                          key={batch.id}
-                          className="batch-option"
-                          onClick={() => handleBatchSelect(batch)}
-                        >
-                          <strong>{batch.name}</strong>
-                          <small>{batch.description}</small>
-                        </div>
-                      ))
+                    {batches.length > 0 ? (
+                      <>
+                        {batches.map(batch => (
+                          <div
+                            key={batch.id}
+                            className="batch-option"
+                            onClick={() => handleBatchSelect(batch)}
+                          >
+                            <strong>{batch.name}</strong>
+                            <small>{batch.description}</small>
+                          </div>
+                        ))}
+                        {batchPage < batchTotalPages - 1 && (
+                          <div
+                            className="load-more"
+                            onClick={() => fetchBatches(batchSearchTerm, batchPage + 1)}
+                            style={{ padding: '8px', textAlign: 'center', cursor: 'pointer', color: '#0066cc' }}
+                          >
+                            Load more...
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <div className="no-batches">No batches found</div>
                     )}
@@ -790,6 +901,16 @@ function CreateExamWizard() {
                 <div className="batch-students-section">
                   <div className="students-header">
                     <h4>Students in this batch</h4>
+                    <div className="student-search">
+                      <input
+                        type="text"
+                        placeholder="Search students..."
+                        value={studentSearchTerm}
+                        onChange={handleStudentSearch}
+                        className="student-search-input"
+                      />
+                      <span className="search-icon">🔍</span>
+                    </div>
                     <div className="student-selection-actions">
                       <button 
                         className="small-btn"
@@ -813,26 +934,40 @@ function CreateExamWizard() {
                   ) : (
                     <>
                       <div className="students-count">
-                        {getSelectedStudentsCount()} of {selectedBatchCandidates.length} students selected
+                        {getSelectedStudentsCount()} of {studentTotal} students selected
                       </div>
 
                       <div className="students-list-container">
                         {selectedBatchCandidates.length > 0 ? (
-                          selectedBatchCandidates.map((student, index) => (
-                            <div key={index} className="student-item">
-                              <label className="checkbox-label">
-                                <input
-                                  type="checkbox"
-                                  checked={student.selected}
-                                  onChange={() => toggleStudentSelection(index)}
-                                />
-                                <div className="student-info">
-                                  <span className="student-name">{student.name}</span>
-                                  <span className="student-email">{student.email}</span>
-                                </div>
-                              </label>
-                            </div>
-                          ))
+                          <>
+                            {selectedBatchCandidates.map((student, index) => (
+                              <div key={index} className="student-item">
+                                <label className="checkbox-label">
+                                  <input
+                                    type="checkbox"
+                                    checked={student.selected}
+                                    onChange={() => toggleStudentSelection(index)}
+                                  />
+                                  <div className="student-info">
+                                    <span className="student-name">{student.name}</span>
+                                    <span className="student-email">{student.email}</span>
+                                  </div>
+                                </label>
+                              </div>
+                            ))}
+
+                            {studentPage < studentTotalPages - 1 && (
+                              <div
+                                className="load-more-students"
+                                onClick={() =>
+                                  fetchBatchStudents(selectedBatch.id, studentSearchTerm, studentPage + 1)
+                                }
+                                style={{ padding: '10px', textAlign: 'center', cursor: 'pointer', color: '#0066cc' }}
+                              >
+                                Load more students...
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <p className="no-students">No students found in this batch</p>
                         )}

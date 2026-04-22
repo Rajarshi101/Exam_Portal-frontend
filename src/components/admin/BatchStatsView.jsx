@@ -309,11 +309,11 @@ function BatchStatsView({ selectedBatch, onBack }) {
               {totalPages > 1 && (
                 <div className="pagination">
                   <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(0, p - 1))} disabled={currentPage === 0}>
-                    Previous
+                    ← Previous
                   </button>
                   <span>{currentPage + 1} / {totalPages}</span>
                   <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))} disabled={currentPage >= totalPages - 1}>
-                    Next
+                    Next →
                   </button>
                 </div>
               )}

@@ -322,7 +322,7 @@ function OverviewExamTable({ onSelectExam, selectedExamId }) {
               </table>
 
               {/* Pagination */}
-              {totalPages > 1 && (
+              {/* {totalPages > 1 && (
                 <div className="pagination">
                   <button
                     className="pagination-btn"
@@ -360,7 +360,19 @@ function OverviewExamTable({ onSelectExam, selectedExamId }) {
                     Page {currentPage + 1} of {totalPages}
                   </div>
                 </div>
+              )} */}
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(0, p - 1))} disabled={currentPage === 0}>
+                    ← Previous
+                  </button>
+                  <span>{currentPage + 1} / {totalPages}</span>
+                  <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))} disabled={currentPage >= totalPages - 1}>
+                    Next →
+                  </button>
+                </div>
               )}
+              <div className="total-batches">Total: {totalExams} exams</div>
             </div>
 
             <div className="slot-card">
@@ -368,7 +380,7 @@ function OverviewExamTable({ onSelectExam, selectedExamId }) {
             </div>
           </div>
 
-          <div className="table-footer">
+          {/* <div className="table-footer">
             <p>Total Exams: {totalExams}</p>
             <div className="legend">
               <span className="legend-item">
@@ -384,7 +396,7 @@ function OverviewExamTable({ onSelectExam, selectedExamId }) {
                 Monitor
               </span>
             </div>
-          </div>
+          </div> */}
         </>
       )}
 

@@ -557,6 +557,7 @@ function AssignCandidatesModal({ examId, examTitle, onClose }) {
                     onFocus={() => setShowBatchDropdown(true)}
                     className="batch-search-input"
                   />
+                  <span className="search-icon">🔍</span>
                   {loadingBatches && <span className="search-spinner">⏳</span>}
                 </div>
  
@@ -606,35 +607,38 @@ function AssignCandidatesModal({ examId, examTitle, onClose }) {
               {/* Students List */}
               {selectedBatch && (
                 <div className="batch-students-section">
-                  <div className="students-header">
+                  <div className="students-header batch-modal">
                     <h4>Students in this batch</h4>
-                    <div className="student-search" style={{ marginBottom: '10px' }}>
-                      <input
-                        type="text"
-                        placeholder="Search students..."
-                        value={studentSearchTerm}
-                        onChange={handleStudentSearch}
-                        className="student-search-input"
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                      />
-                    </div>
-                    <div className="student-selection-actions" style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                      <button
-                        className="small-btn"
-                        onClick={selectAllStudents}
-                        disabled={loadingStudents || (selectedBatchCandidates || []).length === 0}
-                        style={{ padding: '5px 10px', background: '#f0f0f0', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}
-                      >
-                        Select All
-                      </button>
-                      <button
-                        className="small-btn"
-                        onClick={deselectAllStudents}
-                        disabled={loadingStudents || (selectedBatchCandidates || []).length === 0}
-                        style={{ padding: '5px 10px', background: '#f0f0f0', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}
-                      >
-                        Deselect All
-                      </button>
+                    <div className="student-header-action">
+                      <div className="student-search">
+                        <input
+                          type="text"
+                          placeholder="Search students..."
+                          value={studentSearchTerm}
+                          onChange={handleStudentSearch}
+                          className="student-search-input"
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
+                        />
+                        <span className="search-icon">🔍</span>
+                      </div>
+                      <div className="student-selection-actions">
+                        <button
+                          className="small-btn"
+                          onClick={selectAllStudents}
+                          disabled={loadingStudents || (selectedBatchCandidates || []).length === 0}
+                          // style={{ padding: '5px 10px', background: '#f0f0f0', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}
+                        >
+                          Select All
+                        </button>
+                        <button
+                          className="small-btn"
+                          onClick={deselectAllStudents}
+                          disabled={loadingStudents || (selectedBatchCandidates || []).length === 0}
+                          // style={{ padding: '5px 10px', background: '#f0f0f0', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}
+                        >
+                          Deselect All
+                        </button>
+                      </div>
                     </div>
                   </div>
  
@@ -687,7 +691,7 @@ function AssignCandidatesModal({ examId, examTitle, onClose }) {
           )}
         </div>
  
-        <div className="modal-footer" style={{ padding: '15px', display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #eee' }}>
+        <div className="modal-footer" style={{ padding: '15px', display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #eee', borderRadius: '0 0 12px 12px' }}>
           <button
             className="btn-cancel"
             onClick={handleClose}
